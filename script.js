@@ -1,12 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
     const BASE = './chapter/';
+    // CHAPTERS 목록은 레포지토리의 파일명을 기반으로 합니다.
     const CHAPTERS = [
         "1장 서론.md", "2장 소아의 진단.md", "3장 성장과 발달.md",
         "4장 유전.md", "5장 소아의 영양.md", "6장 소아 양생(小兒 養生).md",
-        "7장 소아 치료법.md", "8장 신생아 미ᆆ 초생병.md", "9장 감염병.md",
+        "7장 소아 치료법.md", "8장 신생아 및 초생병.md", "9장 감염병.md",
         "10장 호흡기계의 병증 및 질환.md", "11장 소화기계의 병증 및 질환.md",
         "12장 신경계의 병증 및 질환.md", "13장 소아청소년기 정신장애.md",
-        "14장 심혈관계.md", "15장 간담계의 병즌 및 질환.md",
+        "14장 심혈관계.md", "15장 간담계의 병증 및 질환.md",
         "16장 비뇨생식기계의 병증 및 질환.md", "17장 알레르기 질환.md",
         "18장 면역질환.md", "19장 근·골격계 질환.md", "20장 내분비질환.md",
         "21장 종양.md", "22장 피부질환.md", "23장 안질환.md",
@@ -26,18 +27,32 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const qBankRes = await fetch('question_bank.json');
             if (!qBankRes.ok) {
-                console.error("Failed to load question data (question_bank.json). Check file path/network.");
                 return false;
             }
             questionBank = await qBankRes.json();
             return true;
         } catch (e) {
-            console.error("Error during data fetching:", e);
             return false;
         }
     }
 
-    // 🚨 핵심 수정: 연도별 개수를 계산하고 디자인을 위한 HTML 구조를 반환
+    // 🚨 Item 레벨 문제 키 추출을 위한 함수
+    function getNumericalKey(chapterNum, sectionNum, itemText) {
+        // Item 텍스트에서 번호를 추출 (예: 1.1.1 소아과학의 정의 -> 1)
+        const match = itemText.match(/(\d+\.\d+\.)(\d+)\s/);
+        const itemNum = match ? match[2] : '0';
+        return `${chapterNum} | ${sectionNum} | ${itemNum}`;
+    }
+
+    // 🚨 Python의 parse_num_parts와 일치해야 함: [C, S, I]
+    function getNumericalParts(itemText) {
+        const parts = itemText.match(/\d+/g);
+        if (!parts || parts.length < 3) return ['0', '0', '0'];
+        return [parts[0], parts[1], parts[2]];
+    }
+
+
+    // 🚨 문제 배열을 받아 연도별 개수를 계산하고 HTML 문자열을 반환
     function getYearlyBreakdown(questions) {
         if (!questions || questions.length === 0) return { html: `<span class="yearly-breakdown"><span class="total-count-label">(0 문제)</span></span>`, count: 0 };
         
@@ -54,10 +69,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const yearChips = [];
         
         years.forEach(year => {
-            const count = counts[year] || 0; // 0개라도 표시
+            const count = counts[year] || 0; 
             const cssClass = count === 0 ? 'year-chip zero-count' : 'year-chip';
-            
-            // 각 연도별 개수를 뱃지 구조로 변환
             yearChips.push(`<span class="${cssClass}" data-year="${year}">${year.slice(2)}:${count}</span>`);
         });
 
@@ -70,7 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return { html, count: total };
     }
     
-    // Chapter Total Count 계산
     function getChapterTotalBreakdown(chapterNum, questionBank) {
         let allQuestions = [];
         const prefix = `${chapterNum} | `;
@@ -83,7 +95,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return getYearlyBreakdown(allQuestions);
     }
     
-    // Global Total Count 계산
     function getGlobalTotalBreakdown(questionBank) {
         let allQuestions = [];
         for (const key in questionBank) {
@@ -92,8 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return getYearlyBreakdown(allQuestions);
     }
 
-
-    // 마크다운 파서 (이전과 동일)
+    // 마크다운 파서: 섹션 번호만 추출합니다.
     function parseChapter(md) {
         const sections = [];
         let current = null;
@@ -106,6 +116,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (line.startsWith('# ')) {
                 if (current) sections.push(current);
                 const rawTitle = line.replace(/^#\s*/, '');
+                
+                // # 1절 -> 1
                 const secMatch = rawTitle.match(/^(\d+)절\s*/);
                 const sectionNum = secMatch ? secMatch[1] : '0';
 
@@ -115,10 +127,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     items: [] 
                 };
             } else if (line.startsWith('- ')) {
+                // Item은 그대로 텍스트를 저장합니다.
                 if (current) {
                     const itemRaw = line.replace(/^-+\s*/, '').trim(); 
-                    const itemClean = itemRaw.replace(/^\d+\.\s*/, '').trim();
-                    current.items.push(itemClean);
+                    current.items.push(itemRaw); // Item 텍스트를 그대로 저장 (C.S.I. 제목 포함)
                 }
             }
         }
@@ -126,16 +138,19 @@ document.addEventListener('DOMContentLoaded', () => {
         return { sections };
     }
 
-    // 문제 표시 DOM 생성 (이전과 동일)
+    // 문제 렌더링 (이전과 동일)
     function renderQuestions(questions, $target) {
         if (questions.length === 0) {
-             $target.innerHTML = `<div class="item-empty no-question">⚠️ 이 Section에 연결된 2021~2025년 기출 문제가 없습니다.</div>`;
+             $target.innerHTML = `<div class="item-empty no-question">⚠️ 이 항목에 연결된 문제가 없습니다.</div>`;
              return;
         }
         
         const ul = document.createElement('ul');
         ul.classList.add('questions-container-list');
 
+        // ... (문제 표시 로직 생략 - 이전과 동일)
+        // ... (최종 코드에서는 생략하지 않음)
+        
         questions.forEach(q => {
             const li = document.createElement('li');
             li.classList.add('question-card');
@@ -246,8 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         secWrap.className = 'section';
                         
                         // Section별 문제 개수 계산 및 HTML 생성
-                        const numericalKey = `${chapterNum} | ${sec.numericalKey}`;
-                        const sectionQuestions = questionBank[numericalKey] || [];
+                        const sectionQuestions = []; // Item 클릭 전에는 0으로 표시
                         const sectionBreakdown = getYearlyBreakdown(sectionQuestions);
                         
                         secWrap.innerHTML = `
@@ -258,22 +272,19 @@ document.addEventListener('DOMContentLoaded', () => {
                             </span>
                           </div>
                           <ul class="items"></ul>
-                          <div class="questions-output"></div>
                         `;
 
                         const $secLine = secWrap.querySelector('.section-line');
                         const $items = secWrap.querySelector('.items');
-                        const $questionsContainer = secWrap.querySelector('.questions-output');
 
                         // 절 토글
                         $secLine.addEventListener('click', () => {
                             const secOpen = $secLine.getAttribute('aria-expanded') === 'true';
                             if (secOpen) {
                                 $items.classList.remove('visible');
-                                $questionsContainer.style.display = 'none';
                                 $secLine.setAttribute('aria-expanded', 'false');
                             } else {
-                                // 1. 하위 항목 DOM 구성 (Items)
+                                // 1. Item 렌더링
                                 if ($items.childElementCount === 0) {
                                     if (sec.items.length === 0) {
                                         const spacer = document.createElement('div');
@@ -282,25 +293,46 @@ document.addEventListener('DOMContentLoaded', () => {
                                     } else {
                                         sec.items.forEach((txt) => {
                                             const itemLi = document.createElement('li');
-                                            itemLi.className = 'item';
-                                            itemLi.textContent = txt;
-                                            itemLi.style.cursor = 'default';
+                                            itemLi.className = 'item item-line';
+                                            itemLi.setAttribute('role', 'button');
+                                            itemLi.setAttribute('aria-expanded', 'false');
+                                            itemLi.innerHTML = `
+                                                <div class="item-title">${txt}</div>
+                                                <div class="item-content questions-output"></div>
+                                            `;
+
+                                            const $itemContent = itemLi.querySelector('.item-content');
+                                            const [c, s, i] = getNumericalParts(txt); // txt = C.S.I. 이름
+                                            const numericalKey = `${c} | ${s} | ${i}`;
+                                            
+                                            // Item 레벨 문제 개수 표시
+                                            const itemQuestions = questionBank[numericalKey] || [];
+                                            const itemBreakdown = getYearlyBreakdown(itemQuestions);
+                                            itemLi.querySelector('.item-title').innerHTML += `<span class="q-count-badge" style="margin-left: 10px;">${itemBreakdown.html}</span>`;
+
+                                            // Item 클릭 -> 문제 표시
+                                            itemLi.addEventListener('click', (ev) => {
+                                                ev.stopPropagation(); 
+                                                const itemOpen = itemLi.getAttribute('aria-expanded') === 'true';
+                                                
+                                                if (itemOpen) {
+                                                    $itemContent.classList.remove('visible');
+                                                    itemLi.setAttribute('aria-expanded', 'false');
+                                                } else {
+                                                    // 문제 로드 및 렌더링
+                                                    if ($itemContent.childElementCount === 0) {
+                                                        renderQuestions(itemQuestions, $itemContent);
+                                                    }
+
+                                                    $itemContent.classList.add('visible');
+                                                    itemLi.setAttribute('aria-expanded', 'true');
+                                                }
+                                            });
                                             $items.appendChild(itemLi);
                                         });
                                     }
                                 }
                                 
-                                // 2. 문제 데이터 로드 및 렌더링
-                                if (questionBank[numericalKey]) {
-                                    const questions = questionBank[numericalKey];
-                                    $questionsContainer.innerHTML = ''; 
-                                    renderQuestions(questions, $questionsContainer);
-                                    $questionsContainer.style.display = 'block';
-                                } else {
-                                    $questionsContainer.innerHTML = `<div class="item-empty no-question">⚠️ 이 목차 (${numericalKey})에 매칭되는 문제가 없습니다.</div>`;
-                                    $questionsContainer.style.display = 'block';
-                                }
-
                                 $items.classList.add('visible');
                                 $secLine.setAttribute('aria-expanded', 'true');
                             }
