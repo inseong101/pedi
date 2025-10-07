@@ -735,6 +735,44 @@ h1, h2, h3 {
     gap: 12px;
 }
 
+.item-detail-concept .concept-status {
+    align-self: flex-start;
+}
+
+.concept-content {
+    background: var(--surface);
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+    padding: 16px;
+    color: var(--text-primary);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.concept-content h2,
+.concept-content h3,
+.concept-content h4,
+.concept-content h5 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.concept-content p {
+    margin: 0 0 12px;
+}
+
+.concept-content ul,
+.concept-content ol {
+    padding-left: 20px;
+    margin: 0 0 12px;
+}
+
+.concept-content li {
+    margin-bottom: 6px;
+}
+
 .item-detail-concept .concept-empty {
     flex: 1;
     display: flex;
@@ -954,6 +992,13 @@ h1, h2, h3 {
 
 .question-options li[data-correct="true"] {
     position: relative;
+}
+
+.question-card:not(.show-answer) .question-options li[data-correct="true"] {
+    padding-right: 0;
+}
+
+.question-card.show-answer .question-options li[data-correct="true"] {
     padding-right: 44px;
 }
 
