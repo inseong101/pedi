@@ -1002,13 +1002,610 @@
     ]
   },
   "hanbang": {
-    "1 | 1 | 1": [
+    "1 | 2 | 1": [
       {
-        "id": "2023-1",
-        "item_key": "1.1.1 기혈의 생성과 운행",
-        "question_text": "45세 남성이 한방생리학 시험을 준비하고 있다. 기혈이 함께 운행하며 서로를 보완한다는 내용을 설명하려고 할 때, 가장 적절한 진술은?",
-        "data_1": "pulse-wave.svg",
-        "options_html": "<li><b>①</b> 기는 정기를 뜻하며 혈과는 무관하다.</li><li><b>②</b> 혈은 기에 의해 추진되고 기는 혈에 의해 영양을 받는다. <span class=\"answer\"></span></li><li><b>③</b> 기와 혈은 항상 따로 운행한다.</li><li><b>④</b> 혈은 기의 기능을 억제한다.</li><li><b>⑤</b> 기와 혈의 관계는 장부와 무관하다.</li>"
+        "id": "2021-49",
+        "item_key": "1.2.1 음양론",
+        "question_text": "다음의 음양 상호관계는?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 상호의존(相互依存)</li><li><b>②</b> 대립제약(對立制約)</li><li><b>③</b> 소장평형(消長平衡) <span class=\"answer\"></span></li><li><b>④</b> 상호전화(相互轉化</li><li><b>⑤</b> 호용호근(互用互根)</li>"
+      },
+      {
+        "id": "2024-49",
+        "item_key": "1.2.1 음양론",
+        "question_text": "급성열병으로 고열이 지속되다가 돌연 체온이 하강하여 손발이 자가워지는 증상과 관련된 음양 관계는?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 대립제약(對立制約)</li><li><b>②</b> 상호의존(相互依存)</li><li><b>③</b> 상호전화(相互轉化) <span class=\"answer\"></span></li><li><b>④</b> 소장평형(消長平衡)</li><li><b>⑤</b> 호근호용(互根互用)</li>"
+      },
+      {
+        "id": "2025-49",
+        "item_key": "1.2.1 음양론",
+        "question_text": "다음에서 설명하는 음양의 상호 관계는?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 소장평형(消長平衡) <span class=\"answer\"></span></li><li><b>②</b> 상호의존(相互依存)</li><li><b>③</b> 대립제약(對立制約)</li><li><b>④</b> 상호전화(相互轉化)</li><li><b>⑤</b> 호근호용(互根互用)</li>"
+      }
+    ],
+    "1 | 3 | 1": [
+      {
+        "id": "2021-50",
+        "item_key": "1.3.1 오행론",
+        "question_text": "말다툼 도중 심하게 분노했다. 오행의 상승(相乘)관계로 설명할 수 있는 증상은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 배가 아프고 설사한다. <span class=\"answer\"></span></li><li><b>②</b> 전신이 아프고 몸이 붓는다.</li><li><b>③</b> 가슴이 답답하고 한숨을 쉰다.</li><li><b>④</b> 옆구리가 아프고 근이 뒤틀린다.</li><li><b>⑤</b> 뼈가 아프고 소변이 새어 나온다.</li>"
+      },
+      {
+        "id": "2022-50",
+        "item_key": "1.3.1 오행론",
+        "question_text": "다음 증상에 적용하는 오행 치료 원칙은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 자수함목법(滋水涵木法)</li><li><b>②</b> 배토생금법(培土生金法) <span class=\"answer\"></span></li><li><b>③</b> 금수상생법(金水相生法)</li><li><b>④</b> 좌금평목법(佐金平木法)</li><li><b>⑤</b> 익화보토법(益火補土法)</li>"
+      },
+      {
+        "id": "2024-50",
+        "item_key": "1.3.1 오행론",
+        "question_text": "오행의 관계에서 우울한 감정이 심할 때 이를 이겨내고 조절\n하는 데 필요한 감정 상태는?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 놀란다.</li><li><b>②</b> 화낸다.</li><li><b>③</b> 기뻐한다. <span class=\"answer\"></span></li><li><b>④</b> 고민한다.</li><li><b>⑤</b> 두려워한다.</li>"
+      },
+      {
+        "id": "2025-50",
+        "item_key": "1.3.1 오행론",
+        "question_text": "심화가 항진되어 머리가 어지럽고 귀에서 소리가 나며 허리와 무릎이 시린 증상이 있다. 이 상황을 설명하는 오행의 상호 관계는?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 상극(相克)</li><li><b>②</b> 상승(相乘)</li><li><b>③</b> 상모(相侮) <span class=\"answer\"></span></li><li><b>④</b> 모병급자(母病及子)</li><li><b>⑤</b> 자병급모(子病及母)</li>"
+      }
+    ],
+    "1 | 4 | 1": [
+      {
+        "id": "2021-51",
+        "item_key": "1.4.1 육기론",
+        "question_text": "인체에 침입하여 주리를 막아 피부, 근맥, 혈맥을 오그라들게 하며 통증을 유발하는 육음은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 풍사</li><li><b>②</b> 한사 <span class=\"answer\"></span></li><li><b>③</b> 습사</li><li><b>④</b> 조사</li><li><b>⑤</b> 서사</li>"
+      },
+      {
+        "id": "2022-51",
+        "item_key": "1.4.1 육기론",
+        "question_text": "다음에서 설명하는 육기는?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 풍열(風熱)</li><li><b>②</b> 한습(寒濕)</li><li><b>③</b> 조열(燥熱)</li><li><b>④</b> 양조(凉燥) <span class=\"answer\"></span></li><li><b>⑤</b> 서풍(暑風)</li>"
+      },
+      {
+        "id": "2023-51",
+        "item_key": "1.4.1 육기론",
+        "question_text": "다음에서 설명하는 사기(邪氣)는?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 풍(風)</li><li><b>②</b> 한(寒)</li><li><b>③</b> 열(熱) <span class=\"answer\"></span></li><li><b>④</b> 조(燥)</li><li><b>⑤</b> 어(瘀)</li>"
+      },
+      {
+        "id": "2023-64",
+        "item_key": "1.4.1 육기론",
+        "question_text": "평소 겁내는 마음이 많은데, 심해져서 두려워하는 마음에 이르면 중병이 되어 정충(怔忡)이 나타난다. 이 사상인(四象人)의 건강조건은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 소변이 시원하고 양이 많다.</li><li><b>②</b> 침이 많아 입 마름이 없다.</li><li><b>③</b> 물을 즐겨 마신다.</li><li><b>④</b> 용변 시간이 짧다.</li><li><b>⑤</b> 땀이 적절히 많다. <span class=\"answer\"></span></li>"
+      },
+      {
+        "id": "2024-51",
+        "item_key": "1.4.1 육기론",
+        "question_text": "육기(六氣) 중 기후의 한서(寒暑) 편차로 발생하고 인체에서는 한열(寒熱)의 차이로 질병을 일으키는 것은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 풍 <span class=\"answer\"></span></li><li><b>②</b> 한</li><li><b>③</b> 서</li><li><b>④</b> 습</li><li><b>⑤</b> 조</li>"
+      },
+      {
+        "id": "2025-51",
+        "item_key": "1.4.1 육기론",
+        "question_text": "기의 승강출입에 장애를 일으키며, 무거운 성질로 인해 하강하여 하부를 침범하기 쉬운 육음(六陰)은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 풍</li><li><b>②</b> 한</li><li><b>③</b> 습</li><li><b>④</b> 조 <span class=\"answer\"></span></li><li><b>⑤</b> 화</li>"
+      }
+    ],
+    "2 | 2 | 9": [
+      {
+        "id": "2021-52",
+        "item_key": "2.2.9 장부 사이의 관계",
+        "question_text": "허리와 무릎, 아랫배가 차가워지는 느낌이 들고 아프며, 무른 변을 보고 새벽 설사를 한다. 병기는?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 대장습열(大腸濕熱)</li><li><b>②</b> 비신양허(脾腎陽虛) <span class=\"answer\"></span></li><li><b>③</b> 수기능심(水氣凌心)</li><li><b>④</b> 수한범폐(水寒犯肺)</li><li><b>⑤</b> 신허수범(腎虛水泛)</li>"
+      },
+      {
+        "id": "2023-50",
+        "item_key": "2.2.9 장부 사이의 관계",
+        "question_text": "기침이 나고 숨이 가쁘며 속이 치밀어 답답함을 느낀다. 또한 가슴과 옆구리가 뻐근하고 아파 불쾌한 느낌이 있다. 병기는?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 심기가 부족해져서 담기가 허한해짐</li><li><b>②</b> 심과 비의 기허로 협조기능이 상실됨</li><li><b>③</b> 간경의 화기가 폐의 숙강기능에 영향을 미침 <span class=\"answer\"></span></li><li><b>④</b> 간의 소설기능 장애로 위의 하강기능이 약해짐</li><li><b>⑤</b> 폐음과 신음이 허해져서 자윤기능이 상실됨</li>"
+      },
+      {
+        "id": "2023-55",
+        "item_key": "2.2.9 장부 사이의 관계",
+        "question_text": "허리와 무릎이 시큰거리고 눈이 건조하며 옆구리가 거북하고 손바닥과 가슴에 열감을 느낀다. 변증은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 간혈허(肝血虛)</li><li><b>②</b> 간신음허(肝腎陰虛) <span class=\"answer\"></span></li><li><b>③</b> 신정부족(腎精不足)</li><li><b>④</b> 심간혈허(心肝血虛)</li><li><b>⑤</b> 폐신음허(肺腎陰虛)</li>"
+      },
+      {
+        "id": "2023-59",
+        "item_key": "2.2.9 장부 사이의 관계",
+        "question_text": "예민한 성격의 기능성 소화불량증 환자가 윗배가 빵빵하고 은은한 복통이 있으며 가슴이 답답하고 신물이 올라오며 메슥거림을 호소한다. 상호 관련된 장부는?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 비 – 심</li><li><b>②</b> 비 – 폐</li><li><b>③</b> 비 – 신</li><li><b>④</b> 위 – 간 <span class=\"answer\"></span></li><li><b>⑤</b> 위 – 신</li>"
+      },
+      {
+        "id": "2024-64",
+        "item_key": "2.2.9 장부 사이의 관계",
+        "question_text": "34세 여자가 백대하(白帶下)가 발생하여 병원에 왔다. 소변을 자주 보고 소화가 덜 된 음식물이 섞인 설사가 나온다. 원인은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 실열(實熱)의 침범</li><li><b>②</b> 어혈(瘀血)의 적체</li><li><b>③</b> 습열(濕熱)의 침범</li><li><b>④</b> 간음(肝陰)의 허약</li><li><b>⑤</b> 비신(脾賢)의 허한 <span class=\"answer\"></span></li>"
+      }
+    ],
+    "2 | 4 | 2": [
+      {
+        "id": "2021-53",
+        "item_key": "2.4.2 오신과 칠정",
+        "question_text": "정과 함께 출입하면서 정기를 보좌하고, 오관과 피부의 감각기능, 수족의 운동기능 및 기억을 포함하여 내부로 수장 시키는 기능을 담당하는 정신활동은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 신(神)</li><li><b>②</b> 혼(魂)</li><li><b>③</b> 백(魄) <span class=\"answer\"></span></li><li><b>④</b> 의(意)</li><li><b>⑤</b> 지(志)</li>"
+      },
+      {
+        "id": "2022-53",
+        "item_key": "2.4.2 오신과 칠정",
+        "question_text": "결정되지 않은 생각을 확고하게 하여 뜻이 변치 않도록 하는 정신작용은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 지(智)</li><li><b>②</b> 려(慮)</li><li><b>③</b> 사(思)</li><li><b>④</b> 억(億)</li><li><b>⑤</b> 지(志) <span class=\"answer\"></span></li>"
+      },
+      {
+        "id": "2023-53",
+        "item_key": "2.4.2 오신과 칠정",
+        "question_text": "기억된 정보를 떠올리고 새로운 정보를 받아들이는 가운데 비교분석을 통하여 판단의 근거를 마련하는 정신활동은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 혼</li><li><b>②</b> 신</li><li><b>③</b> 의 <span class=\"answer\"></span></li><li><b>④</b> 백</li><li><b>⑤</b> 지</li>"
+      }
+    ],
+    "2 | 1 | 4": [
+      {
+        "id": "2021-54",
+        "item_key": "2.1.4 기",
+        "question_text": "혈액을 운행시키고 진액을 전신에 퍼트리는 기의 작용은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 인체를 따뜻하게 유지한다.</li><li><b>②</b> 외부 사기의 침입을 방어한다.</li><li><b>③</b> 전반적인 생리기능을 추동한다. <span class=\"answer\"></span></li><li><b>④</b> 체내의 대사산물을 조절하고 유실을 방지한다.</li><li><b>⑤</b> 생리활동에 필요한 물질과 에너지를 변화시킨다.</li>"
+      },
+      {
+        "id": "2022-52",
+        "item_key": "2.1.4 기",
+        "question_text": "12세 소아가 화재현장에 혼자 고립되어 있다가 구조되었다. 이후 다리가 저리고 시리며 뼈가 시큰거리고 식은땀이 흐르게 되었다. 병기는?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 경즉기란(驚則氣亂)</li><li><b>②</b> 노즉기상(怒則氣上)</li><li><b>③</b> 비즉기소(悲則氣消)</li><li><b>④</b> 공즉기하(恐則氣下) <span class=\"answer\"></span></li><li><b>⑤</b> 노즉기모(勞則氣耗)</li>"
+      },
+      {
+        "id": "2022-54",
+        "item_key": "2.1.4 기",
+        "question_text": "25세 여자가 친구와 다투다 정신을 잃고 쓰러져 구급차로 이송되었다. 환자는 담연(痰涎)과 외상이 없고 몸이 싸늘하였다. 잠시 후 깨어나 당시 상황을 기억하였다. 병증은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 단기(短氣)</li><li><b>②</b> 기역(氣逆)</li><li><b>③</b> 중풍(中風)</li><li><b>④</b> 칠기(七氣)</li><li><b>⑤</b> 중기(中氣) <span class=\"answer\"></span></li>"
+      },
+      {
+        "id": "2023-54",
+        "item_key": "2.1.4 기",
+        "question_text": "풍(風), 담(痰), 화(火), 어(瘀)로 인해 기기가 순조롭지 못하여\n혼미, 언어건삽(言語蹇澁), 수족구련(手足拘攣), 대변비결, 소변\n불통 등이 나타난다. 병인은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 기역(氣逆)</li><li><b>②</b> 기체(氣滯)</li><li><b>③</b> 기폐(氣閉) <span class=\"answer\"></span></li><li><b>④</b> 기함(氣陷)</li><li><b>⑤</b> 기허(氣虛)</li>"
+      },
+      {
+        "id": "2024-54",
+        "item_key": "2.1.4 기",
+        "question_text": "땀 분비량을 조절하여 체온 유지에 관여하는 기는?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 영기(營氣)</li><li><b>②</b> 위기(衛氣) <span class=\"answer\"></span></li><li><b>③</b> 원기(原氣)</li><li><b>④</b> 종기(宗氣)</li><li><b>⑤</b> 진기(眞氣)</li>"
+      },
+      {
+        "id": "2025-54",
+        "item_key": "2.1.4 기",
+        "question_text": "수곡정미에서 생성되어 흉중(胸中)에 쌓이는 기에 대한 설명은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 사지와 오장육부 등 전신을 영양한다.</li><li><b>②</b> 장부, 경락, 조직, 기관의 기능을 격발하고 추동한다.</li><li><b>③</b> 신(腎)에서 발원하고 삼초를 통해 전신으로 운행한다.</li><li><b>④</b> 주리의 개합을 조절하여 진액의 배설을 조절한다.</li><li><b>⑤</b> 심맥(心脈)을 관통하여 심박동과 혈액의 운행을 추동한다. <span class=\"answer\"></span></li>"
+      }
+    ],
+    "2 | 1 | 5": [
+      {
+        "id": "2021-55",
+        "item_key": "2.1.5 혈",
+        "question_text": "43세 여자가 출산 후 젖이 적게 나온다고 병원에 왔다. 불면과 건망증이 있으며 눈이 뻑뻑하다고 한다. 손상된 것은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 기</li><li><b>②</b> 신</li><li><b>③</b> 습</li><li><b>④</b> 정</li><li><b>⑤</b> 혈 <span class=\"answer\"></span></li>"
+      },
+      {
+        "id": "2023-60",
+        "item_key": "2.1.5 혈",
+        "question_text": "특징적인 양상으로 통증이 나타나고 출혈증상을 유발할 수 있으며 만성화되면 종괴를 형성하는 병인은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 기역(氣逆)</li><li><b>②</b> 기체(氣滯)</li><li><b>③</b> 혈어(血瘀) <span class=\"answer\"></span></li><li><b>④</b> 혈열(血熱)</li><li><b>⑤</b> 혈한(血寒)</li>"
+      },
+      {
+        "id": "2024-55",
+        "item_key": "2.1.5 혈",
+        "question_text": "혈액의 운행이 늦어져 울체되고 뭉쳐서 발생한 병리 상태에 사용하는 약재는?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 도인 홍화 <span class=\"answer\"></span></li><li><b>②</b> 반하 진피</li><li><b>③</b> 택사 저령</li><li><b>④</b> 황기 인삼</li><li><b>⑤</b> 작약 숙지황</li>"
+      },
+      {
+        "id": "2025-55",
+        "item_key": "2.1.5 혈",
+        "question_text": "35세 여자가 팔다리에 힘이 없다고 병원에 왔다. 팔다리가 마비된 느낌이고 근육의 경련도 심하게 일어난다. 현기증이 나고 시야가 흐려지며 눈이 침침해지고 귀에서 소리도 난다고 한다. 관련된 혈의 기능은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 생식 기능에 관여한다.</li><li><b>②</b> 정신 활동을 유지한다.</li><li><b>③</b> 감각 기능을 발휘한다. <span class=\"answer\"></span></li><li><b>④</b> 외사의 침입을 방어한댜</li><li><b>⑤</b> 체내 물질의 산포와 배설을 조절한다.</li>"
+      }
+    ],
+    "2 | 2 | 7": [
+      {
+        "id": "2021-56",
+        "item_key": "2.2.7 명문, 심포, 삼초",
+        "question_text": "다음 병리현상은 어느 장부의 기능 이상으로 설명할 수 있는가?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 담자 중정지관 결단출언(膽者 中正之官 決斷出焉)</li><li><b>②</b> 비위자 창름지관 오미출언(脾胃者 倉廩之官 五味出焉)</li><li><b>③</b> 대장자 전도지관 변화출언(大腸者 傳道之官 變化出焉)</li><li><b>④</b> 삼초자 결독지관 수도출언(三焦者 決瀆之官 水道出焉) <span class=\"answer\"></span></li><li><b>⑤</b> 소장자 수성지관 화물출언(小腸者 受盛之官 化物出焉)</li>"
+      },
+      {
+        "id": "2021-58",
+        "item_key": "2.2.7 명문, 심포, 삼초",
+        "question_text": "인체의 태극, 원기의 뿌리, 수화(水火)의 집으로 비유되는 장부는?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 신</li><li><b>②</b> 심</li><li><b>③</b> 명문 <span class=\"answer\"></span></li><li><b>④</b> 삼초</li><li><b>⑤</b> 심포</li>"
+      }
+    ],
+    "2 | 3 | 3": [
+      {
+        "id": "2021-57",
+        "item_key": "2.3.3 경락 계통의 구성",
+        "question_text": "장부와 직접적인 속락관계가 없는 경락 중 주행과 다리의 운동에 관여하는 것은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 교맥(蹻脈) <span class=\"answer\"></span></li><li><b>②</b> 독맥(督脈)</li><li><b>③</b> 유맥(維脈)</li><li><b>④</b> 임맥(任脈)</li><li><b>⑤</b> 충맥(衝脈)</li>"
+      },
+      {
+        "id": "2022-57",
+        "item_key": "2.3.3 경락 계통의 구성",
+        "question_text": "기경팔맥에 대한 설명은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 아래에서 위를 향하여 순행한다.</li><li><b>②</b> 충맥은 족태양경과 족소음경의 연계를 밀접하게 한다.</li><li><b>③</b> 양유맥은 하지를 순행하고 음유맥은 상지를 순행한다.</li><li><b>④</b> 음경은 양경으로 주향하고 양경은 음경으로 주향하여</li><li><b>⑤</b> 상호표리가 된다. <span class=\"answer\"></span></li>"
+      },
+      {
+        "id": "2024-57",
+        "item_key": "2.3.3 경락 계통의 구성",
+        "question_text": "경별(經別)에 대한 설명은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 체강 내로 흐른다. <span class=\"answer\"></span></li><li><b>②</b> 색 변화를 통해 진단한다.</li><li><b>③</b> 출혈시켜 질병을 치료한다.</li><li><b>④</b> 표리가 되는 12 경맥과 합져진다.</li><li><b>⑤</b> 경기(經氣)를 흉복부로 집중시킨다.</li>"
+      },
+      {
+        "id": "2025-57",
+        "item_key": "2.3.3 경락 계통의 구성",
+        "question_text": "기경팔맥에 대한 설명은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 상지를 순행하고 하지에는 분포하지 않는다.</li><li><b>②</b> 대맥과 충맥을 제외하면 음양 대응관계가 성립한다. <span class=\"answer\"></span></li><li><b>③</b> 독맥과 임맥을 제외하면 십이경맥에 소속된 혈이 없다.</li><li><b>④</b> 충맥을 제외하면 모두 아래에서 위를 향하여 순행한다.</li><li><b>⑤</b> 십이경맥에서 분출된 비교적 큰 지맥(支脈)으로 장부와의</li>"
+      }
+    ],
+    "2 | 2 | 2": [
+      {
+        "id": "2021-59",
+        "item_key": "2.2.2 간 기능계",
+        "question_text": "아랫배와 고환이 서로 당기는 느낌이 들면서 아프고, 고환에 무거운 것이 매달린 듯하며, 사지가 차갑다. 변증은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 간기횡역(肝氣橫逆)</li><li><b>②</b> 담기허한(膽氣虛寒)</li><li><b>③</b> 신기불고(腎氣不固)</li><li><b>④</b> 신양허증(腎陽虛證)</li><li><b>⑤</b> 한체간맥(寒滯肝脈) <span class=\"answer\"></span></li>"
+      },
+      {
+        "id": "2022-59",
+        "item_key": "2.2.2 간 기능계",
+        "question_text": "다음 증상과 관련 있는 기능은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 간장혈(肝藏血) <span class=\"answer\"></span></li><li><b>②</b> 간주소설(肝主疏泄)</li><li><b>③</b> 심주혈맥(心主血脈)</li><li><b>④</b> 비통혈(脾統血)</li><li><b>⑤</b> 비주운화(脾主運化)</li>"
+      },
+      {
+        "id": "2024-59",
+        "item_key": "2.2.2 간 기능계",
+        "question_text": "스트레스로 가슴이 답답하고 새로운 아이디어가 잘 떠오르지 않으며 소화가 잘 되지 않고 대소변을 보기 어렵거나, 성기능이 저하되는 것과 관련된 장부와 기능은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 간-소설(疏池) <span class=\"answer\"></span></li><li><b>②</b> 간-장혈(藏血)</li><li><b>③</b> 폐-선발(宣發)</li><li><b>④</b> 폐-숙강(肅降)</li><li><b>⑤</b> 신-장정(藏精)</li>"
+      },
+      {
+        "id": "2025-59",
+        "item_key": "2.2.2 간 기능계",
+        "question_text": "다음에서 설명하는 기능은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 소설(疏泄) <span class=\"answer\"></span></li><li><b>②</b> 통혈(統血)</li><li><b>③</b> 전도(傳導)</li><li><b>④</b> 수납(受納)</li><li><b>⑤</b> 통조수도(週調水道)</li>"
+      }
+    ],
+    "2 | 2 | 3": [
+      {
+        "id": "2021-60",
+        "item_key": "2.2.3 심 기능계",
+        "question_text": "과로 후 전신의 힘이 빠지고 움직이면 가슴이 두근거리고 답답한 증상이 심해진다. 얼굴은 창백하고, 설질담, 맥미세하다. 치료 대상은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 간음(肝陰)</li><li><b>②</b> 심기(心氣) <span class=\"answer\"></span></li><li><b>③</b> 비기(脾氣)</li><li><b>④</b> 폐음(肺陰)</li><li><b>⑤</b> 신정(腎精)</li>"
+      },
+      {
+        "id": "2022-58",
+        "item_key": "2.2.3 심 기능계",
+        "question_text": "조그마한 일에도 잘 놀라고 잠을 깊이 자지 못하며 꿈을 많이 꾼다. 마음이 항상 불안하고 안정이 안 된다. 관련 있는 장부 관계는?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 간 – 대장</li><li><b>②</b> 심 – 담 <span class=\"answer\"></span></li><li><b>③</b> 비 – 소장</li><li><b>④</b> 폐 – 방광</li><li><b>⑤</b> 신 – 삼초</li>"
+      },
+      {
+        "id": "2022-60",
+        "item_key": "2.2.3 심 기능계",
+        "question_text": "다음 증상과 관련된 장부 상호 관계는?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 간 – 담</li><li><b>②</b> 심 – 소장 <span class=\"answer\"></span></li><li><b>③</b> 비 – 위</li><li><b>④</b> 폐 – 대장</li><li><b>⑤</b> 신 – 방광</li>"
+      },
+      {
+        "id": "2023-49",
+        "item_key": "2.2.3 심 기능계",
+        "question_text": "가슴이 두근거리고 불안하며 호흡이 불규칙하다. 또한 활동 하면 증상이 심해지고 몸과 손발이 차가워진다. 부족해진 것은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 간양(肝陽)</li><li><b>②</b> 심양(心陽) <span class=\"answer\"></span></li><li><b>③</b> 비양(脾陽)</li><li><b>④</b> 폐양(肺陽)</li><li><b>⑤</b> 신양(腎陽)</li>"
+      },
+      {
+        "id": "2023-58",
+        "item_key": "2.2.3 심 기능계",
+        "question_text": "마음이 불안하고 두려워서 잘 놀라며 겁이 나고 마음이 공허한 심리 상태를 호소한다. 관련 있는 육부는?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 담 <span class=\"answer\"></span></li><li><b>②</b> 위</li><li><b>③</b> 소장</li><li><b>④</b> 대장</li><li><b>⑤</b> 방광</li>"
+      },
+      {
+        "id": "2024-60",
+        "item_key": "2.2.3 심 기능계",
+        "question_text": "심열(心熱)이 전해져 환자가 가슴의 답답함, 갈증 및 배뇨 시 통증을 호소할 때 치료해야 할 장부는?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 담</li><li><b>②</b> 위</li><li><b>③</b> 대장</li><li><b>④</b> 삼초</li><li><b>⑤</b> 방광 <span class=\"answer\"></span></li>"
+      },
+      {
+        "id": "2025-60",
+        "item_key": "2.2.3 심 기능계",
+        "question_text": "다음 기능과 관련된 장부는?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 삼초</li><li><b>②</b> 소장 <span class=\"answer\"></span></li><li><b>③</b> 위</li><li><b>④</b> 대장</li><li><b>⑤</b> 방광</li>"
+      }
+    ],
+    "2 | 2 | 4": [
+      {
+        "id": "2021-61",
+        "item_key": "2.2.4 비 기능계",
+        "question_text": "식사량이 적어지고 식사 후에 배가 더부룩한 느낌이 든다. 몸을 움직이기 싫어하면서 무력감을 느끼고, 입이 마르며 변비가 생겼다. 부족한 것은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 간음(肝陰)</li><li><b>②</b> 심음(心陰)</li><li><b>③</b> 비음(脾陰) <span class=\"answer\"></span></li><li><b>④</b> 폐음(肺陰)</li><li><b>⑤</b> 신음(腎陰)</li>"
+      },
+      {
+        "id": "2022-61",
+        "item_key": "2.2.4 비 기능계",
+        "question_text": "입안이 건조하고 갈증이 나며 손발과 가슴에 열감이 생겨 답답하다. 변비로 배변이 힘들고, 윗배가 은은하게 아프다. 부족해진 것은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 비기(脾氣)</li><li><b>②</b> 비양(脾陽)</li><li><b>③</b> 폐음(肺陰)</li><li><b>④</b> 위음(胃陰) <span class=\"answer\"></span></li><li><b>⑤</b> 위양(胃陽)</li>"
+      },
+      {
+        "id": "2023-61",
+        "item_key": "2.2.4 비 기능계",
+        "question_text": "얼굴이 누렇게 뜨고 피곤해서 움직이거나 말하는 것을 싫어 한다. 또한 짧고 가쁜 호흡을 하며 식사 후 더부룩해지고 식사량이 적어지며 무른 변을 본다. 변증은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 위한(胃寒)</li><li><b>②</b> 비기허(脾氣虛) <span class=\"answer\"></span></li><li><b>③</b> 비음허(脾陰虛)</li><li><b>④</b> 위음허(胃陰虛)</li><li><b>⑤</b> 폐기허(肺氣虛)</li>"
+      },
+      {
+        "id": "2024-61",
+        "item_key": "2.2.4 비 기능계",
+        "question_text": "입맛이 없고 대변이 무르며, 배 부위에 통증과 찬 기운이 있다고 호소한다 변증은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 비기허(脾氣虛)</li><li><b>②</b> 비양허(脾陽虛) <span class=\"answer\"></span></li><li><b>③</b> 비음허(脾陰虛)</li><li><b>④</b> 위기허(胃氣虛)</li><li><b>⑤</b> 위음허(胃陰虛)</li>"
+      },
+      {
+        "id": "2025-61",
+        "item_key": "2.2.4 비 기능계",
+        "question_text": "50세 여자가 몸이 붓는다고 병원에 왔다. 구토를 하며 식사량이 줄었고 아랫배가 차갑다고 하여 육군자탕에 목향을 가하여 치료하였다. 관련된 기능은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 간의 승발(升發)</li><li><b>②</b> 비의 운화(運化) <span class=\"answer\"></span></li><li><b>③</b> 신의 기화(氣化)</li><li><b>④</b> 폐의 통조수도(通調水道)</li><li><b>⑤</b> 신의 이음개합(二陰開闔)</li>"
+      }
+    ],
+    "2 | 2 | 5": [
+      {
+        "id": "2021-62",
+        "item_key": "2.2.5 폐 기능계",
+        "question_text": "열병을 앓고 난 후 살이 빠지고, 입이 마르며, 어지럽고, 변비가 생겼다. 문제가 생긴 기능은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 간주소설(肝主疏泄)</li><li><b>②</b> 대장주진(大腸主津) <span class=\"answer\"></span></li><li><b>③</b> 위주강탁(胃主降濁)</li><li><b>④</b> 폐주숙강(肺主肅降)</li><li><b>⑤</b> 방광장진액(膀胱藏津液)</li>"
+      },
+      {
+        "id": "2022-62",
+        "item_key": "2.2.5 폐 기능계",
+        "question_text": "소아가 감기에 걸린 후 모세기관지염이 발생하였다. 열이 나고 숨소리가 거칠어 마행감석탕을 투여하였다. 관련된 생리 기능은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 간주소설(肝主疏泄)</li><li><b>②</b> 심주신지(心主神志)</li><li><b>③</b> 비주운화(脾主運化)</li><li><b>④</b> 폐주선발(肺主宣發) <span class=\"answer\"></span></li><li><b>⑤</b> 신주폐장(腎主閉藏)</li>"
+      },
+      {
+        "id": "2023-52",
+        "item_key": "2.2.5 폐 기능계",
+        "question_text": "마른기침을 하거나 약간의 가래가 끼고 오후가 되면 얼굴에 열기가 올라오면서 붉어진다. 또한 잠을 자는 동안 땀을 흘리며 입이 마르고 목이 건조해진다. 부족해진 것은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 간음(肝陰)</li><li><b>②</b> 심음(心陰)</li><li><b>③</b> 비음(脾陰)</li><li><b>④</b> 폐음(肺陰) <span class=\"answer\"></span></li><li><b>⑤</b> 신음(腎陰)</li>"
+      },
+      {
+        "id": "2023-62",
+        "item_key": "2.2.5 폐 기능계",
+        "question_text": "마른기침을 하며 가래가 있어도 적은 양으로 끈적끈적하여 뱉어내기가 힘들고 입 주위와 콧속에 윤기가 부족하다. 변증은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 조사범폐(燥邪犯肺) <span class=\"answer\"></span></li><li><b>②</b> 폐신음허(肺腎陰虛)</li><li><b>③</b> 풍한속폐(風寒束肺)</li><li><b>④</b> 풍열범폐(風熱犯肺)</li><li><b>⑤</b> 한담조폐(寒痰阻肺)</li>"
+      },
+      {
+        "id": "2024-62",
+        "item_key": "2.2.5 폐 기능계",
+        "question_text": "찬 바람을 맞으면 수양성 콧물, 기침, 재채기를 한다. 관련된 기능은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 간주소설(肝主疏池)</li><li><b>②</b> 소장주액(小腸主液)</li><li><b>③</b> 비주운화(脾主運化)</li><li><b>④</b> 폐주선발(肺主宣發) <span class=\"answer\"></span></li><li><b>⑤</b> 대장주진(大腸主津)</li>"
+      },
+      {
+        "id": "2025-62",
+        "item_key": "2.2.5 폐 기능계",
+        "question_text": "숙강(肅降)에 대한 설명은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 한액(汗液)을 체외로 배설시킨다.</li><li><b>②</b> 진액(津液)을 상부로 산포시킨다.</li><li><b>③</b> 호흡을 통해 탁기(濁氣)를 배출시킨다.</li><li><b>④</b> 위기(衛氣)를 기육과 피부로 산포시킨다.</li><li><b>⑤</b> 상조(上焦)의 진액을 방광으로 이동시킨다. <span class=\"answer\"></span></li>"
+      }
+    ],
+    "2 | 2 | 6": [
+      {
+        "id": "2021-63",
+        "item_key": "2.2.6 신 기능계",
+        "question_text": "9세 남아가 다리에 힘이 없고 어지럽다며 병원에 왔다. 태어날 때부터 허약했으며, 다른 아이들에 비해 발육이 느렸다. 문제가 생긴 기능은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 간장혈(肝藏血)</li><li><b>②</b> 심장신(心藏神)</li><li><b>③</b> 비장영(脾藏營)</li><li><b>④</b> 폐장기(肺藏氣)</li><li><b>⑤</b> 신장정(腎藏精) <span class=\"answer\"></span></li>"
+      },
+      {
+        "id": "2022-63",
+        "item_key": "2.2.6 신 기능계",
+        "question_text": "신정(腎精) 부족으로 발생할 수 있는 병증은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 정이(聤耳)</li><li><b>②</b> 대하(帶下)</li><li><b>③</b> 음종(陰腫)</li><li><b>④</b> 탈항(脫肛)</li><li><b>⑤</b> 각연(脚軟) <span class=\"answer\"></span></li>"
+      },
+      {
+        "id": "2023-63",
+        "item_key": "2.2.6 신 기능계",
+        "question_text": "부종이 있고 몸이 차면서 허리와 무릎이 시리고 아프다. 또한 소변량이 적고 배가 더부룩하면서 불러온다. 변증은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 비양허(脾陽虛)</li><li><b>②</b> 신기허(腎氣虛)</li><li><b>③</b> 폐양허(肺陽虛)</li><li><b>④</b> 신기불고(腎氣不固)</li><li><b>⑤</b> 신허수범(腎虛水泛) <span class=\"answer\"></span></li>"
+      },
+      {
+        "id": "2024-63",
+        "item_key": "2.2.6 신 기능계",
+        "question_text": "67세 남자가 오랜 병을 앓고 난 후 소변이 방울방울 떨어지거나 잘 나오지 않고 배뇨통이 있다. 관련된 생리 기능은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 담의 중정(中正)</li><li><b>②</b> 비의 운화(運化)</li><li><b>③</b> 심포의 희락(喜樂)</li><li><b>④</b> 대장의 전도(傳導)</li><li><b>⑤</b> 방광의 기화(氣化) <span class=\"answer\"></span></li>"
+      },
+      {
+        "id": "2025-63",
+        "item_key": "2.2.6 신 기능계",
+        "question_text": "60세 남자가 호흡이 곤란하다고 병원에 왔다. 호기보다는 흡기가 곤란하여 숨이 차고 다리가 시리며 이마에서 식은 땀이 난다. 관련된 기능은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 간의 조달(條達)</li><li><b>②</b> 심의 주맥(主脈)</li><li><b>③</b> 비의 승청(升淸)</li><li><b>④</b> 폐의 장백(藏魄)</li><li><b>⑤</b> 신의 납기(納氣) <span class=\"answer\"></span></li>"
+      }
+    ],
+    "2 | 7 | 3": [
+      {
+        "id": "2021-64",
+        "item_key": "2.7.3 『동의수세보원』의 사상체질이론",
+        "question_text": "과단성이 있고 진취성이 강한 성격이다. 지나치면 공격적이고 후퇴를 모르며, 경박하고 무례하여 규범을 따르지 않는다. 체질은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 소양인</li><li><b>②</b> 소음인</li><li><b>③</b> 태양인 <span class=\"answer\"></span></li><li><b>④</b> 태음인</li><li><b>⑤</b> 음양화평지인</li>"
+      },
+      {
+        "id": "2022-64",
+        "item_key": "2.7.3 『동의수세보원』의 사상체질이론",
+        "question_text": "비만 체형의 중년 여자가 평소 추위를 타고 비가 오면 무릎이 아프다. 다리가 잘 붓고 변이 묽다. 배가 차고 복부에 덩어리가 만져진다. 원인은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 여기(癘氣)</li><li><b>②</b> 칠정(七情)</li><li><b>③</b> 한습(寒濕) <span class=\"answer\"></span></li><li><b>④</b> 조한(燥寒)</li><li><b>⑤</b> 풍열(風熱)</li>"
+      },
+      {
+        "id": "2025-64",
+        "item_key": "2.7.3 『동의수세보원』의 사상체질이론",
+        "question_text": "다음이 설명하는 사상인의 편대지장(偏大之臟)은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 신</li><li><b>②</b> 간</li><li><b>③</b> 폐</li><li><b>④</b> 비 <span class=\"answer\"></span></li><li><b>⑤</b> 심</li>"
+      }
+    ],
+    "1 | 2 | 2": [
+      {
+        "id": "2022-49",
+        "item_key": "1.2.2. 음양론적 생리체계",
+        "question_text": "다음 증상에 적용하는 음양 이론은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 음양대립(陰陽對立)</li><li><b>②</b> 음성격양(陰盛格陽) <span class=\"answer\"></span></li><li><b>③</b> 음양호근(陰陽互根)</li><li><b>④</b> 교감호장(交感互藏)</li><li><b>⑤</b> 음양소장(陰陽消長</li>"
+      }
+    ],
+    "2 | 1 | 6": [
+      {
+        "id": "2022-55",
+        "item_key": "2.1.6 진액",
+        "question_text": "두피상열감, 피하출혈, 야간발열을 호소하는 환자에게 적합한 치법은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 보정(補精)</li><li><b>②</b> 안신(安神)</li><li><b>③</b> 익기(益氣)</li><li><b>④</b> 양혈(凉血) <span class=\"answer\"></span></li><li><b>⑤</b> 이수(利水)</li>"
+      },
+      {
+        "id": "2023-56",
+        "item_key": "2.1.6 진액",
+        "question_text": "기침이 있고 숨 쉬기 가빠하면서 가슴이 그득하고 답답하며 구토하거나 흰색 가래침이 생긴다. 병인은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 습담(濕痰) <span class=\"answer\"></span></li><li><b>②</b> 습열(濕熱)</li><li><b>③</b> 열담(熱痰)</li><li><b>④</b> 조담(燥痰)</li><li><b>⑤</b> 수음내정(水飮內停)</li>"
+      },
+      {
+        "id": "2024-56",
+        "item_key": "2.1.6 진액",
+        "question_text": "환자가 기침하면서 색이 맑은 가래를 많이 뱉으며, 가슴이 답답하고 몸이 무겁다고 한다. 식욕은 없으나 배가 불러 오면서 속이 그득한 감이 있으면서 변은 무르다. 변증은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 풍담증(風痰證)</li><li><b>②</b> 열담증(熱痰證)</li><li><b>③</b> 습담증(濕痰證) <span class=\"answer\"></span></li><li><b>④</b> 조담증(燥痰證)</li><li><b>⑤</b> 한담증(寒痰證)</li>"
+      },
+      {
+        "id": "2025-56",
+        "item_key": "2.1.6 진액",
+        "question_text": "진(津)과 구별되는 액(液)의 성질은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 성질이 맑고 묽다.</li><li><b>②</b> 체표주리에 작용한다.</li><li><b>③</b> 움직이는 성질이 크다.</li><li><b>④</b> 기육, 혈맥을 자윤한댜</li><li><b>⑤</b> 관절, 뇌수를 영양한다. <span class=\"answer\"></span></li>"
+      }
+    ],
+    "2 | 1 | 7": [
+      {
+        "id": "2022-56",
+        "item_key": "2.1.7 정신기혈의 상호관계",
+        "question_text": "진액에 대한 설명은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 진(津) 손실 시 기소모를 동반한다. <span class=\"answer\"></span></li><li><b>②</b> 액(液)은 땀, 호흡을 통해 배설된다.</li><li><b>③</b> 진(津)의 대사는 소장에서 주관한다.</li><li><b>④</b> 액(液)은 맑고 희박하고 유동성이 크다.</li><li><b>⑤</b> 진(津)은 골수, 뇌수, 장부 등을 자양한다.</li>"
+      }
+    ],
+    "2 | 3 | 4": [
+      {
+        "id": "2023-57",
+        "item_key": "2.3.4 경락의 생리체계",
+        "question_text": "삼음삼양 중 개(開)의 기능을 하는 것은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 궐음 – 태양</li><li><b>②</b> 소양 – 태음</li><li><b>③</b> 소음 – 양명</li><li><b>④</b> 양명 – 궐음</li><li><b>⑤</b> 태양 – 태음 <span class=\"answer\"></span></li>"
+      }
+    ],
+    "2 | 1 | 2": [
+      {
+        "id": "2024-52",
+        "item_key": "2.1.2 정",
+        "question_text": "신체를 구성하는 기본 요소 중 골수를 보충하고 골격을 단단하게 해 주는 것은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 정(精) <span class=\"answer\"></span></li><li><b>②</b> 신(神)</li><li><b>③</b> 기(氣)</li><li><b>④</b> 혈(血)</li><li><b>⑤</b> 진액(津液)</li>"
+      },
+      {
+        "id": "2025-52",
+        "item_key": "2.1.2 정",
+        "question_text": "다음에서 설명한 이것의 기능은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 정의 질병예방 작용 <span class=\"answer\"></span></li><li><b>②</b> 기의 기화작용</li><li><b>③</b> 신의 정신활동 유지</li><li><b>④</b> 혈의 운동기능 발휘</li><li><b>⑤</b> 정의 생식기능</li>"
+      }
+    ],
+    "2 | 1 | 3": [
+      {
+        "id": "2024-53",
+        "item_key": "2.1.3 신",
+        "question_text": "신(神)의 병리적 상태 중 놀라지 않아도 수시로 심계항진이 발생하는 병증은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 기울(氣鬱)</li><li><b>②</b> 경계(驚悸)</li><li><b>③</b> 정충(怔忡) <span class=\"answer\"></span></li><li><b>④</b> 탈영(脫營)</li><li><b>⑤</b> 실정(失精)</li>"
+      }
+    ],
+    "2 | 2 | 8": [
+      {
+        "id": "2024-58",
+        "item_key": "2.2.8 기항지부",
+        "question_text": "육부 중 오장과 유사하게 청기(淸氣)를 간직하는 것은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 담 <span class=\"answer\"></span></li><li><b>②</b> 위</li><li><b>③</b> 대장</li><li><b>④</b> 방광</li><li><b>⑤</b> 삼초</li>"
+      },
+      {
+        "id": "2025-58",
+        "item_key": "2.2.8 기항지부",
+        "question_text": "영기(營氣)가 바깥으로 벗어나지 않도록 하는 기항지부는?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 뇌(腦)</li><li><b>②</b> 수(髓)</li><li><b>③</b> 담(膽)</li><li><b>④</b> 맥(脈) <span class=\"answer\"></span></li><li><b>⑤</b> 골(骨)</li>"
+      }
+    ],
+    "2 | 4 | 3": [
+      {
+        "id": "2025-53",
+        "item_key": "2.4.3 인지",
+        "question_text": "인지과정 중 ‘려(慮)’의 단계를 거친 후 사물과 현상에 대하여 올바르게 인식하고 대처하는 것은?",
+        "data_1": null,
+        "options_html": "<li><b>①</b> 심(心)</li><li><b>②</b> 의(意)</li><li><b>③</b> 지(智) <span class=\"answer\"></span></li><li><b>④</b> 사(思)</li><li><b>⑤</b> 지(志)</li>"
       }
     ]
   }
