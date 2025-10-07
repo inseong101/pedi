@@ -97,18 +97,25 @@ document.addEventListener('DOMContentLoaded', () => {
             counts[year] = (counts[year] || 0) + 1;
         });
 
-        const yearChips = [];
+        const yearCells = [];
 
         ALL_YEARS.forEach(year => {
             const count = counts[year] || 0;
-            const cssClass = count === 0 ? 'year-chip zero-count' : 'year-chip';
-            yearChips.push(`<span class="${cssClass}" data-year="${year}">${year.slice(2)}:${count}</span>`);
+            const classes = ['year-cell'];
+            if (count === 0) {
+                classes.push('zero-count');
+            }
+            yearCells.push(`<span class="${classes.join(' ')}" data-year="${year}" aria-label="${year}년 ${count}문제">${count}</span>`);
         });
+
+        const totalCell = `<span class="year-cell total-cell" aria-label="총 ${total}문제">${total}</span>`;
+
+        const srText = `${ALL_YEARS.map(year => `${year}년 ${counts[year] || 0}문제`).join(', ')}, 총 ${total}문제`;
 
         const html = `
             <span class="yearly-breakdown">
-                <span class="year-chips">${yearChips.join('')}</span>
-                <span class="total-chip red-total-chip">${total}</span>
+                <span class="year-grid" role="presentation">${yearCells.join('')}${totalCell}</span>
+                <span class="sr-only">${srText}</span>
             </span>
         `;
         return { html, count: total };
