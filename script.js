@@ -35,7 +35,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const ALL_YEARS = ["2021", "2022", "2023", "2024", "2025"];
 
     const $chapterGrid = document.getElementById('chapter-grid');
-    const $chapterDetail = document.getElementById('chapter-detail');
+    const $sectionList = document.getElementById('section-list');
+    const $itemList = document.getElementById('item-list');
+    const $questionList = document.getElementById('question-list');
     const $globalTitle = document.getElementById('global-toc-title');
     const $metricChapters = document.getElementById('metric-chapters');
     const $metricSections = document.getElementById('metric-sections');
@@ -45,6 +47,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const $searchSummary = document.getElementById('search-summary');
     const $searchResults = document.getElementById('search-results');
     const $searchList = document.getElementById('search-list');
+    const $sectionSummary = document.getElementById('section-summary');
+    const $itemSummary = document.getElementById('item-summary');
+    const $questionSummary = document.getElementById('question-summary');
 
     const typeLabels = {
         chapter: '장 전체',
@@ -173,6 +178,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderQuestions(questions, $target) {
+        if (!$target) return;
+        $target.innerHTML = '';
+
         if (!questions.length) {
             $target.innerHTML = `<div class="item-empty no-question">⚠️ 이 항목에 연결된 문제가 없습니다.</div>`;
             return;
@@ -231,12 +239,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         $target.appendChild(ul);
     }
-
-
-    const detailState = {
-        activeChapterNumber: null,
-        activeButton: null
+    const uiState = {
+        activeChapter: null,
+        activeSectionIndex: null,
+        activeItemIndex: null,
+        pendingChapter: null
     };
+
+    const columnState = {
+        sectionButtons: [],
+        sectionData: [],
+        itemButtons: [],
+        itemData: []
+    };
+
+    const chapterElements = new Map();
 
     function chapterDisplayTitle(chapter) {
         return `제${chapter.number}장 ${chapter.title}`;
@@ -316,279 +333,299 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function closeChapterDetail() {
-        if (detailState.activeButton) {
-            detailState.activeButton.classList.remove('is-active');
-            detailState.activeButton.setAttribute('aria-expanded', 'false');
-        }
-        detailState.activeButton = null;
-        detailState.activeChapterNumber = null;
-        if ($chapterDetail) {
-            $chapterDetail.innerHTML = '';
+    function setSummaryText(element, text) {
+        if (element) {
+            element.textContent = text;
         }
     }
 
-    function renderChapterDetailSkeleton(chapter) {
-        if (!$chapterDetail) return;
-        const breakdown = getChapterTotalBreakdown(chapter.number, questionBank);
-        $chapterDetail.innerHTML = `
-            <div class="chapter-detail-container loading">
-                <header class="chapter-detail-header">
-                    <div class="chapter-detail-title">
-                        <h3>${chapterDisplayTitle(chapter)}</h3>
-                        <span class="chapter-detail-count">${breakdown.html}</span>
-                    </div>
-                    <button type="button" class="chapter-detail-close" aria-label="장 패널 닫기">×</button>
-                </header>
-                <div class="chapter-detail-body">
-                    <div class="chapter-detail-loading">불러오는 중...</div>
-                </div>
-            </div>
-        `;
-
-        const closeBtn = $chapterDetail.querySelector('.chapter-detail-close');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => closeChapterDetail());
+    function setSummaryHTML(element, html) {
+        if (element) {
+            element.innerHTML = html;
         }
     }
 
-    function renderChapterDetailContent(chapter, parsed) {
-        if (!$chapterDetail) return;
+    function showPlaceholder(container, message, className = 'toc-empty') {
+        if (!container) return;
+        container.innerHTML = '';
+        if (!message) return;
+        const div = document.createElement('div');
+        div.className = className;
+        div.textContent = message;
+        container.appendChild(div);
+    }
 
-        const breakdown = getChapterTotalBreakdown(chapter.number, questionBank);
-        const container = document.createElement('div');
-        container.className = 'chapter-detail-container';
+    function resetSectionColumn(message = '장을 선택하면 절이 표시됩니다.') {
+        columnState.sectionButtons = [];
+        columnState.sectionData = [];
+        showPlaceholder($sectionList, message);
+        setSummaryText($sectionSummary, message);
+    }
 
-        const header = document.createElement('header');
-        header.className = 'chapter-detail-header';
+    function resetItemColumn(message = '절을 선택하면 항목이 표시됩니다.') {
+        columnState.itemButtons = [];
+        columnState.itemData = [];
+        showPlaceholder($itemList, message);
+        setSummaryText($itemSummary, message);
+    }
 
-        const titleWrap = document.createElement('div');
-        titleWrap.className = 'chapter-detail-title';
+    function resetQuestionColumn(message = '항목을 선택하면 관련 문제가 아래에 나타납니다.') {
+        showPlaceholder($questionList, message, 'question-empty');
+        setSummaryText($questionSummary, message);
+    }
 
-        const titleEl = document.createElement('h3');
-        titleEl.textContent = chapterDisplayTitle(chapter);
+    function renderSectionsForChapter(chapter, parsed) {
+        if (!$sectionList) return;
 
-        const countBadge = document.createElement('span');
-        countBadge.className = 'chapter-detail-count';
-        countBadge.innerHTML = breakdown.html;
-
-        titleWrap.append(titleEl, countBadge);
-
-        const closeBtn = document.createElement('button');
-        closeBtn.type = 'button';
-        closeBtn.className = 'chapter-detail-close';
-        closeBtn.setAttribute('aria-label', '장 패널 닫기');
-        closeBtn.textContent = '×';
-        closeBtn.addEventListener('click', () => closeChapterDetail());
-
-        header.append(titleWrap, closeBtn);
-        container.appendChild(header);
-
-        const body = document.createElement('div');
-        body.className = 'chapter-detail-body';
-
-        if (parsed.source === 'fallback' && parsed.sections?.length) {
-            const notice = document.createElement('div');
-            notice.className = 'fallback-notice';
-            notice.textContent = '⚠️ 원본 목차 파일 없이 문제 데이터를 기준으로 구성되었습니다.';
-            body.appendChild(notice);
-        }
+        columnState.sectionButtons = [];
+        columnState.sectionData = [];
 
         const sections = Array.isArray(parsed.sections) ? parsed.sections : [];
+        const chapterTitle = chapterDisplayTitle(chapter);
+        const chapterBreakdown = getChapterTotalBreakdown(chapter.number, questionBank);
+
         if (!sections.length) {
-            const empty = document.createElement('div');
-            empty.className = 'item-empty';
-            empty.textContent = parsed.source === 'fallback'
-                ? '⚠️ 해당 장의 목차 파일이 없어 문제 데이터를 구성할 수 없습니다.'
+            const message = parsed.source === 'fallback'
+                ? '⚠️ 문제 데이터로 절을 구성할 수 없습니다. question_bank.json을 확인해주세요.'
                 : '등록된 절 정보가 없습니다.';
-            body.appendChild(empty);
-        } else {
-            const sectionsWrap = document.createElement('div');
-            sectionsWrap.className = 'detail-sections';
-
-            sections.forEach((sec, secIndex) => {
-                const sectionWrap = document.createElement('div');
-                sectionWrap.className = 'detail-section';
-                sectionWrap.dataset.sectionIndex = String(secIndex);
-
-                const sectionBreakdown = getSectionTotalBreakdown(chapter.number, sec.numericalKey);
-
-                const sectionButton = document.createElement('button');
-                sectionButton.type = 'button';
-                sectionButton.className = 'section-line';
-                sectionButton.setAttribute('aria-expanded', 'false');
-
-                const sectionCount = document.createElement('span');
-                sectionCount.className = 'line-count';
-                sectionCount.innerHTML = sectionBreakdown.html;
-
-                const sectionTitle = document.createElement('span');
-                sectionTitle.className = 'toc-title';
-                sectionTitle.textContent = sec.rawTitle;
-
-                const sectionIcon = document.createElement('span');
-                sectionIcon.className = 'toggle-icon';
-                sectionIcon.setAttribute('aria-hidden', 'true');
-
-                sectionButton.append(sectionCount, sectionTitle, sectionIcon);
-
-                const itemsList = document.createElement('ul');
-                itemsList.className = 'detail-items';
-                itemsList.hidden = true;
-
-                sectionButton.addEventListener('click', (event) => {
-                    event.stopPropagation();
-                    const isOpen = sectionButton.getAttribute('aria-expanded') === 'true';
-                    if (isOpen) {
-                        itemsList.hidden = true;
-                        itemsList.classList.remove('visible');
-                        sectionButton.setAttribute('aria-expanded', 'false');
-                        return;
-                    }
-
-                    if (itemsList.childElementCount === 0) {
-                        const itemQuestionsTotal = [];
-
-                        if (!sec.items || sec.items.length === 0) {
-                            const emptyItem = document.createElement('li');
-                            emptyItem.className = 'item-empty';
-                            emptyItem.textContent = '등록된 항목이 없습니다.';
-                            itemsList.appendChild(emptyItem);
-                        } else {
-                            sec.items.forEach((txt, itemIndex) => {
-                                const itemLi = document.createElement('li');
-                                itemLi.className = 'detail-item';
-                                itemLi.dataset.itemIndex = String(itemIndex);
-
-                                const itemButton = document.createElement('button');
-                                itemButton.type = 'button';
-                                itemButton.className = 'item-line';
-                                itemButton.setAttribute('aria-expanded', 'false');
-
-                                const itemCount = document.createElement('span');
-                                itemCount.className = 'line-count';
-
-                                const [c, s, i] = getNumericalParts(txt);
-                                const numericalKey = `${c} | ${s} | ${i}`;
-
-                                const itemQuestions = questionBank[numericalKey] || [];
-                                const itemBreakdown = getYearlyBreakdown(itemQuestions);
-                                itemCount.innerHTML = itemBreakdown.html;
-                                itemQuestionsTotal.push(...itemQuestions);
-
-                                const itemTitle = document.createElement('span');
-                                itemTitle.className = 'item-title';
-                                itemTitle.textContent = txt;
-
-                                const itemIcon = document.createElement('span');
-                                itemIcon.className = 'toggle-icon';
-                                itemIcon.setAttribute('aria-hidden', 'true');
-
-                                itemButton.append(itemCount, itemTitle, itemIcon);
-
-                                const itemContent = document.createElement('div');
-                                itemContent.className = 'item-content questions-output';
-                                itemContent.hidden = true;
-
-                                itemButton.addEventListener('click', (evt) => {
-                                    evt.stopPropagation();
-                                    const itemOpen = itemButton.getAttribute('aria-expanded') === 'true';
-
-                                    if (itemOpen) {
-                                        itemContent.classList.remove('visible');
-                                        itemContent.hidden = true;
-                                        itemButton.setAttribute('aria-expanded', 'false');
-                                    } else {
-                                        if (!itemContent.dataset.loaded) {
-                                            renderQuestions(itemQuestions, itemContent);
-                                            itemContent.dataset.loaded = 'true';
-                                        }
-
-                                        itemContent.classList.add('visible');
-                                        itemContent.hidden = false;
-                                        itemButton.setAttribute('aria-expanded', 'true');
-                                    }
-                                });
-
-                                itemContent.addEventListener('click', (evt) => {
-                                    evt.stopPropagation();
-                                });
-
-                                itemLi.append(itemButton, itemContent);
-                                itemsList.appendChild(itemLi);
-                            });
-                        }
-
-                        const finalSectionBreakdown = getYearlyBreakdown(itemQuestionsTotal);
-                        sectionCount.innerHTML = finalSectionBreakdown.html;
-                    }
-
-                    itemsList.hidden = false;
-                    itemsList.classList.add('visible');
-                    sectionButton.setAttribute('aria-expanded', 'true');
-                });
-
-                sectionWrap.append(sectionButton, itemsList);
-                sectionsWrap.appendChild(sectionWrap);
-            });
-
-            body.appendChild(sectionsWrap);
+            showPlaceholder($sectionList, message);
+            setSummaryHTML($sectionSummary, `${chapterTitle} · 절 0개 <span class="summary-breakdown">${chapterBreakdown.html}</span>`);
+            resetItemColumn('절이 없어 항목을 불러올 수 없습니다.');
+            resetQuestionColumn();
+            return;
         }
 
-        container.appendChild(body);
+        $sectionList.innerHTML = '';
 
-        $chapterDetail.innerHTML = '';
-        $chapterDetail.appendChild(container);
+        if (parsed.source === 'fallback') {
+            const notice = document.createElement('div');
+            notice.className = 'toc-notice';
+            notice.textContent = '⚠️ 원본 목차 파일 없이 문제 데이터를 기준으로 구성되었습니다.';
+            $sectionList.appendChild(notice);
+        }
 
-        document.dispatchEvent(new CustomEvent('chapterdetailready', { detail: { chapter: chapter.number } }));
+        sections.forEach((sec, index) => {
+            const sectionBreakdown = getSectionTotalBreakdown(chapter.number, sec.numericalKey);
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'section-line line-button';
+            button.dataset.index = String(index);
+            button.innerHTML = `
+                <span class="line-count">${sectionBreakdown.html}</span>
+                <span class="toc-title">${sec.rawTitle}</span>
+                <span class="line-chevron" aria-hidden="true"></span>
+            `;
+            button.addEventListener('click', (event) => {
+                event.preventDefault();
+                activateSectionByIndex(index, { scroll: true });
+            });
+
+            columnState.sectionButtons.push(button);
+            columnState.sectionData.push({
+                chapterNumber: chapter.number,
+                chapterTitle,
+                sectionIndex: index,
+                section: sec,
+                breakdown: sectionBreakdown
+            });
+
+            $sectionList.appendChild(button);
+        });
+
+        setSummaryHTML($sectionSummary, `${chapterTitle} · 절 ${sections.length}개 <span class="summary-breakdown">${chapterBreakdown.html}</span>`);
+        resetItemColumn();
+        resetQuestionColumn();
+    }
+
+    function renderItemsForSection(sectionEntry) {
+        if (!$itemList) return;
+
+        columnState.itemButtons = [];
+        columnState.itemData = [];
+
+        const section = sectionEntry.section;
+        const items = Array.isArray(section.items) ? section.items : [];
+
+        if (!items.length) {
+            showPlaceholder($itemList, '등록된 항목이 없습니다.');
+            setSummaryText($itemSummary, `${sectionEntry.chapterTitle} → ${section.rawTitle} · 항목 0개`);
+            resetQuestionColumn();
+            return;
+        }
+
+        $itemList.innerHTML = '';
+
+        items.forEach((label, itemIndex) => {
+            const [c, s, i] = getNumericalParts(label);
+            const numericalKey = `${c} | ${s} | ${i}`;
+            const questions = questionBank[numericalKey] || [];
+            const breakdown = getYearlyBreakdown(questions);
+
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'item-line line-button';
+            button.dataset.index = String(itemIndex);
+            button.innerHTML = `
+                <span class="line-count">${breakdown.html}</span>
+                <span class="item-title">${label}</span>
+                <span class="line-chevron" aria-hidden="true"></span>
+            `;
+            button.addEventListener('click', (event) => {
+                event.preventDefault();
+                activateItemByIndex(itemIndex, { scroll: true });
+            });
+
+            columnState.itemButtons.push(button);
+            columnState.itemData.push({
+                chapterNumber: sectionEntry.chapterNumber,
+                chapterTitle: sectionEntry.chapterTitle,
+                sectionIndex: sectionEntry.sectionIndex,
+                sectionTitle: section.rawTitle,
+                itemIndex,
+                itemKey: numericalKey,
+                label,
+                breakdown,
+                questions
+            });
+
+            $itemList.appendChild(button);
+        });
+
+        setSummaryText($itemSummary, `${sectionEntry.chapterTitle} → ${section.rawTitle} · 항목 ${items.length}개`);
+        resetQuestionColumn();
+    }
+
+    function activateSectionByIndex(index, options = {}) {
+        const entry = columnState.sectionData[index];
+        if (!entry) return null;
+
+        columnState.sectionButtons.forEach((btn, idx) => {
+            if (!btn) return;
+            btn.classList.toggle('is-active', idx === index);
+            btn.setAttribute('aria-pressed', idx === index ? 'true' : 'false');
+        });
+
+        uiState.activeSectionIndex = index;
+        uiState.activeItemIndex = null;
+
+        renderItemsForSection(entry);
+
+        setSummaryHTML($sectionSummary, `${entry.chapterTitle} (${columnState.sectionData.length}개 절) → ${entry.section.rawTitle} <span class="summary-breakdown">${entry.breakdown.html}</span>`);
+
+        if (options.scroll) {
+            $itemList?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        if (options.autoSelectFirstItem && columnState.itemData.length > 0) {
+            activateItemByIndex(0, { scroll: options.scrollToItem ?? false });
+        }
+
+        return entry;
+    }
+
+    function activateItemByIndex(index, options = {}) {
+        const entry = columnState.itemData[index];
+        if (!entry) return null;
+
+        columnState.itemButtons.forEach((btn, idx) => {
+            if (!btn) return;
+            btn.classList.toggle('is-active', idx === index);
+            btn.setAttribute('aria-pressed', idx === index ? 'true' : 'false');
+        });
+
+        uiState.activeItemIndex = index;
+
+        const pathLabel = `${entry.chapterTitle} → ${entry.sectionTitle} → ${entry.label}`;
+        setSummaryHTML($questionSummary, `<span class="question-label">${pathLabel}</span> <span class="summary-breakdown">${entry.breakdown.html}</span>`);
+
+        renderQuestions(entry.questions, $questionList);
+
+        if (options.scroll) {
+            document.getElementById('question-column-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        return entry;
+    }
+
+    async function activateChapter(chapterNumber, options = {}) {
+        const chapter = CHAPTERS.find(ch => ch.number === chapterNumber);
+        if (!chapter) return null;
+
+        const store = chapterElements.get(chapter.number);
+        uiState.pendingChapter = chapter.number;
+
+        chapterElements.forEach(({ button }) => {
+            if (!button) return;
+            const isCurrent = store?.button === button;
+            button.classList.toggle('is-active', isCurrent);
+            button.setAttribute('aria-pressed', isCurrent ? 'true' : 'false');
+        });
+
+        setSummaryText($sectionSummary, '절을 불러오는 중입니다...');
+        showPlaceholder($sectionList, '절을 불러오는 중입니다.');
+        resetItemColumn();
+        resetQuestionColumn();
+
+        const parsed = await ensureChapterParsed(chapter);
+        if (uiState.pendingChapter !== chapter.number) {
+            return parsed;
+        }
+
+        uiState.activeChapter = chapter.number;
+        uiState.activeSectionIndex = null;
+        uiState.activeItemIndex = null;
+
+        const fallbackButton = store?.button || document.querySelector(`button.chapter-card[data-chapter="${chapter.number}"]`);
+        const updatedStore = {
+            button: fallbackButton || null,
+            parsed
+        };
+        chapterElements.set(chapter.number, updatedStore);
+
+        chapterElements.forEach(({ button }, num) => {
+            if (!button) return;
+            const isActive = num === chapter.number;
+            button.classList.toggle('is-active', isActive);
+            button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
+
+        renderSectionsForChapter(chapter, parsed || { sections: [], source: 'fallback' });
+
+        if (options.autoSelectFirstSection && columnState.sectionData.length > 0) {
+            activateSectionByIndex(0, {
+                scroll: false,
+                autoSelectFirstItem: options.autoSelectFirstItem ?? false,
+                scrollToItem: options.scrollToItem ?? false
+            });
+        }
+
+        if (options.scrollIntoView && updatedStore.button) {
+            updatedStore.button.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        return parsed;
     }
 
     function createChapterCard(chapter) {
+        const breakdown = getChapterTotalBreakdown(chapter.number, questionBank);
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'chapter-card';
         button.dataset.chapter = chapter.number;
-        button.setAttribute('aria-expanded', 'false');
-
-        const breakdown = getChapterTotalBreakdown(chapter.number, questionBank);
-
-        const countSpan = document.createElement('span');
-        countSpan.className = 'chapter-card-count';
-        countSpan.innerHTML = breakdown.html;
-
-        const titleWrap = document.createElement('span');
-        titleWrap.className = 'chapter-card-title';
-        titleWrap.innerHTML = `
-            <span class="chapter-card-number">제${chapter.number}장</span>
-            <span class="chapter-card-label">${chapter.title}</span>
+        button.setAttribute('aria-pressed', 'false');
+        button.innerHTML = `
+            <span class="chapter-card-title">
+                <span class="chapter-card-number">제${chapter.number}장</span>
+                <span class="chapter-card-label">${chapter.title}</span>
+            </span>
+            <span class="chapter-card-count">${breakdown.html}</span>
         `;
 
-        button.append(countSpan, titleWrap);
-
-        button.addEventListener('click', async () => {
-            if (detailState.activeButton === button) {
-                closeChapterDetail();
-                return;
-            }
-
-            if (detailState.activeButton) {
-                detailState.activeButton.classList.remove('is-active');
-                detailState.activeButton.setAttribute('aria-expanded', 'false');
-            }
-
-            detailState.activeButton = button;
-            detailState.activeChapterNumber = chapter.number;
-            button.classList.add('is-active');
-            button.setAttribute('aria-expanded', 'true');
-
-            renderChapterDetailSkeleton(chapter);
-
-            const parsed = await ensureChapterParsed(chapter);
-            if (detailState.activeChapterNumber !== chapter.number) {
-                return;
-            }
-            renderChapterDetailContent(chapter, parsed || { sections: [], source: 'fallback' });
+        button.addEventListener('click', () => {
+            activateChapter(chapter.number, { autoSelectFirstSection: false, scrollIntoView: false });
         });
+
+        chapterElements.set(chapter.number, { button, parsed: parsedCache.get(getChapterCacheKey(chapter)) || null });
 
         return button;
     }
@@ -725,69 +762,25 @@ document.addEventListener('DOMContentLoaded', () => {
         renderSearchResults(results, query);
     }
 
-    function revealEntry(entry) {
+    async function revealEntry(entry) {
         if (!entry) return;
-        const chapterButton = document.querySelector(`button.chapter-card[data-chapter="${entry.chapterNum}"]`);
-        if (!chapterButton) return;
 
-        const focusOnTargets = () => {
-            const sectionsContainer = $chapterDetail ? $chapterDetail.querySelector('.detail-sections') : null;
-            if (!sectionsContainer) {
-                chapterButton.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                return;
-            }
+        await activateChapter(entry.chapterNum, {
+            scrollIntoView: true,
+            autoSelectFirstSection: false
+        });
 
-            const sectionEl = sectionsContainer.querySelectorAll('.detail-section')[entry.sectionIndex || 0];
-            if (!sectionEl) {
-                chapterButton.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                return;
-            }
-
-            const sectionLine = sectionEl.querySelector('.section-line');
-            if (!sectionLine) {
-                sectionEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                return;
-            }
-
-            if (sectionLine.getAttribute('aria-expanded') !== 'true') {
-                sectionLine.click();
-            }
-
-            if (entry.type === 'item' && entry.itemIndex !== null) {
-                window.requestAnimationFrame(() => {
-                    const itemEl = sectionEl.querySelectorAll('.detail-item')[entry.itemIndex || 0];
-                    if (!itemEl) {
-                        sectionLine.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        return;
-                    }
-                    const itemButton = itemEl.querySelector('.item-line');
-                    if (!itemButton) {
-                        itemEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        return;
-                    }
-                    if (itemButton.getAttribute('aria-expanded') !== 'true') {
-                        itemButton.click();
-                    }
-                    itemButton.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                });
-            } else {
-                sectionLine.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        };
-
-        if (detailState.activeChapterNumber === entry.chapterNum) {
-            focusOnTargets();
-            return;
+        if (Number.isInteger(entry.sectionIndex)) {
+            activateSectionByIndex(entry.sectionIndex, {
+                scroll: true,
+                autoSelectFirstItem: false,
+                scrollToItem: true
+            });
         }
 
-        const handleReady = (event) => {
-            if (!event.detail || event.detail.chapter !== entry.chapterNum) return;
-            document.removeEventListener('chapterdetailready', handleReady);
-            focusOnTargets();
-        };
-
-        document.addEventListener('chapterdetailready', handleReady, { once: true });
-        chapterButton.click();
+        if (entry.type === 'item' && Number.isInteger(entry.itemIndex)) {
+            activateItemByIndex(entry.itemIndex, { scroll: true });
+        }
     }
 
     if ($searchInput) {
@@ -803,11 +796,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (target.classList.contains('search-jump')) {
                 const index = Number(target.dataset.index);
                 if (!Number.isNaN(index)) {
-                    revealEntry(searchIndex[index]);
+                    void revealEntry(searchIndex[index]);
                 }
             }
         });
     }
+
+    resetSectionColumn();
+    resetItemColumn();
+    resetQuestionColumn();
 
     loadData().then(async success => {
         if (!success) {
@@ -849,6 +846,15 @@ document.addEventListener('DOMContentLoaded', () => {
             $chapterGrid.innerHTML = '';
             CHAPTERS.forEach((chapter) => {
                 $chapterGrid.appendChild(createChapterCard(chapter));
+            });
+        }
+
+        const firstChapter = CHAPTERS[0];
+        if (firstChapter) {
+            await activateChapter(firstChapter.number, {
+                autoSelectFirstSection: true,
+                autoSelectFirstItem: false,
+                scrollIntoView: false
             });
         }
     });
