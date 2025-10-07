@@ -109,6 +109,8 @@ function initDashboard() {
         let orderedOpen = false;
         let paragraphLines = [];
         let blockquoteOpen = false;
+        let tableOpen = false;
+        let tableLines = [];
 
         const closeLists = () => {
             if (bulletOpen) {
@@ -127,6 +129,82 @@ function initDashboard() {
             paragraphLines = [];
         };
 
+        const parseTableRow = (line) => {
+            let trimmed = line.trim();
+            if (trimmed.startsWith('|')) {
+                trimmed = trimmed.slice(1);
+            }
+            if (trimmed.endsWith('|')) {
+                trimmed = trimmed.slice(0, -1);
+            }
+            return trimmed.split('|').map((cell) => cell.trim());
+        };
+
+        const isAlignmentCell = (cell) => {
+            const compact = cell.replace(/\s+/g, '');
+            return /^:?-{3,}:?$/.test(compact);
+        };
+
+        const parseAlignment = (cells) => {
+            return cells.map((cell) => {
+                const compact = cell.replace(/\s+/g, '');
+                const startsWithColon = compact.startsWith(':');
+                const endsWithColon = compact.endsWith(':');
+                if (startsWithColon && endsWithColon) return 'center';
+                if (endsWithColon) return 'right';
+                return 'left';
+            });
+        };
+
+        const closeTable = () => {
+            if (!tableOpen || !tableLines.length) return;
+
+            const rows = tableLines.map(parseTableRow).filter((cells) => cells.length > 1);
+            tableLines = [];
+            tableOpen = false;
+
+            if (!rows.length) return;
+
+            const headerCells = rows[0];
+            let alignments = headerCells.map(() => 'left');
+            let bodyStartIndex = 1;
+
+            if (rows.length > 1) {
+                const alignmentRow = rows[1];
+                const isAlignmentRow = alignmentRow.length === headerCells.length && alignmentRow.every(isAlignmentCell);
+                if (isAlignmentRow) {
+                    alignments = parseAlignment(alignmentRow);
+                    bodyStartIndex = 2;
+                }
+            }
+
+            htmlParts.push('<table>');
+            htmlParts.push('<thead><tr>');
+            headerCells.forEach((cell, index) => {
+                const align = alignments[index] || 'left';
+                const alignAttr = align !== 'left' ? ` style="text-align:${align}"` : '';
+                htmlParts.push(`<th${alignAttr}>${formatInlineMarkdown(cell)}</th>`);
+            });
+            htmlParts.push('</tr></thead>');
+
+            if (rows.length > bodyStartIndex) {
+                htmlParts.push('<tbody>');
+                for (let i = bodyStartIndex; i < rows.length; i += 1) {
+                    const cells = rows[i];
+                    htmlParts.push('<tr>');
+                    cells.forEach((cell, index) => {
+                        const align = alignments[index] || 'left';
+                        const alignAttr = align !== 'left' ? ` style="text-align:${align}"` : '';
+                        htmlParts.push(`<td${alignAttr}>${formatInlineMarkdown(cell)}</td>`);
+                    });
+                    htmlParts.push('</tr>');
+                }
+                htmlParts.push('</tbody>');
+            }
+
+            htmlParts.push('</table>');
+        };
+
         const closeBlockquote = () => {
             if (!blockquoteOpen) return;
             flushParagraph();
@@ -134,16 +212,24 @@ function initDashboard() {
             blockquoteOpen = false;
         };
 
+        const isTableLine = (line) => {
+            if (!/^\|.*\|$/.test(line)) return false;
+            const cells = parseTableRow(line);
+            return cells.length > 1;
+        };
+
         lines.forEach((rawLine) => {
             const line = rawLine.trim();
 
             if (!line) {
+                closeTable();
                 flushParagraph();
                 return;
             }
 
             const headingMatch = line.match(/^(#{1,4})\s+(.*)$/);
             if (headingMatch) {
+                closeTable();
                 flushParagraph();
                 closeLists();
                 closeBlockquote();
@@ -155,6 +241,7 @@ function initDashboard() {
 
             const quoteMatch = line.match(/^>\s?(.*)$/);
             if (quoteMatch) {
+                closeTable();
                 if (!blockquoteOpen) {
                     flushParagraph();
                     closeLists();
@@ -168,6 +255,20 @@ function initDashboard() {
             if (blockquoteOpen && !quoteMatch) {
                 closeBlockquote();
             }
+
+            if (isTableLine(line)) {
+                if (!tableOpen) {
+                    flushParagraph();
+                    closeLists();
+                    closeBlockquote();
+                    tableOpen = true;
+                    tableLines = [];
+                }
+                tableLines.push(line);
+                return;
+            }
+
+            closeTable();
 
             const bulletMatch = line.match(/^[-*+]\s+(.*)$/);
             if (bulletMatch) {
@@ -209,6 +310,7 @@ function initDashboard() {
         flushParagraph();
         closeLists();
         closeBlockquote();
+        closeTable();
 
         return htmlParts.join('');
     }
