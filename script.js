@@ -1,16 +1,32 @@
 document.addEventListener('DOMContentLoaded', () => {
     const BASE = './chapter/';
     const CHAPTERS = [
-        "1장 서론.md", "2장 소아의 진단.md", "3장 성장과 발달.md",
-        "4장 유전.md", "5장 소아의 영양.md", "6장 소아 양생(小兒 養生).md",
-        "7장 소아 치료법.md", "8장 신생아 및 초생병.md", "9장 감염병.md",
-        "10장 호흡기계의 병증 및 질환.md", "11장 소화기계의 병증 및 질환.md",
-        "12장 신경계의 병증 및 질환.md", "13장 소아청소년기 정신장애.md",
-        "14장 심혈관계.md", "15장 간담계의 병증 및 질환.md",
-        "16장 비뇨생식기계의 병증 및 질환.md", "17장 알레르기 질환.md",
-        "18장 면역질환.md", "19장 근·골격계 질환.md", "20장 내분비질환.md",
-        "21장 종양.md", "22장 피부질환.md", "23장 안질환.md",
-        "24장 증후.md", "25장 급증(손상).md", "26장 소아의료윤리.md"
+        { number: '1', title: '서론', file: '1장 서론.md' },
+        { number: '2', title: '소아의 진단', file: '2장 소아의 진단.md' },
+        { number: '3', title: '성장과 발달', file: '3장 성장과 발달.md' },
+        { number: '4', title: '유전', file: null },
+        { number: '5', title: '소아의 영양', file: '5장 소아의 영양.md' },
+        { number: '6', title: '소아 양생(小兒 養生)', file: '6장 소아 양생(小兒 養生).md' },
+        { number: '7', title: '소아 치료법', file: null },
+        { number: '8', title: '신생아 및 초생병', file: '8장 신생아 및 초생병.md' },
+        { number: '9', title: '감염병', file: '9장 감염병.md' },
+        { number: '10', title: '호흡기계의 병증 및 질환', file: '10장 호흡기계의 병증 및 질환.md' },
+        { number: '11', title: '소화기계의 병증 및 질환', file: '11장 소화기계의 병증 및 질환.md' },
+        { number: '12', title: '신경계의 병증 및 질환', file: '12장 신경계의 병증 및 질환.md' },
+        { number: '13', title: '소아청소년기 정신장애', file: '13장 소아청소년기 정신장애.md' },
+        { number: '14', title: '심혈관계 병증 및 질환', file: '14장 심혈관계 병증 및 질환.md' },
+        { number: '15', title: '간담계의 병증 및 질환', file: '15장 간담계의 병증 및 질환.md' },
+        { number: '16', title: '비뇨생식기계의 병증 및 질환', file: '16장 비뇨생식기계의 병증 및 질환.md' },
+        { number: '17', title: '알레르기 질환', file: '17장 알레르기 질환.md' },
+        { number: '18', title: '면역질환', file: '18장 면역질환.md' },
+        { number: '19', title: '근·골격계 질환', file: '19장 근·골격계 질환.md' },
+        { number: '20', title: '내분비질환', file: '20장 내분비질환.md' },
+        { number: '21', title: '종양', file: '21장 종양.md' },
+        { number: '22', title: '피부질환', file: '22장 피부질환.md' },
+        { number: '23', title: '안질환', file: '23장 안질환.md' },
+        { number: '24', title: '증후', file: '24장 증후.md' },
+        { number: '25', title: '급증(손상)', file: null },
+        { number: '26', title: '소아의료윤리', file: null }
     ];
 
     const parsedCache = new Map();
@@ -18,7 +34,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let questionBank = {};
     const ALL_YEARS = ["2021", "2022", "2023", "2024", "2025"];
 
-    const $list = document.getElementById('list');
+    const $chapterGrid = document.getElementById('chapter-grid');
+    const $sectionList = document.getElementById('section-list');
+    const $itemList = document.getElementById('item-list');
+    const $questionList = document.getElementById('question-list');
+    const $conceptContainer = document.getElementById('concept-container');
     const $globalTitle = document.getElementById('global-toc-title');
     const $metricChapters = document.getElementById('metric-chapters');
     const $metricSections = document.getElementById('metric-sections');
@@ -28,6 +48,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const $searchSummary = document.getElementById('search-summary');
     const $searchResults = document.getElementById('search-results');
     const $searchList = document.getElementById('search-list');
+    const $sectionSummary = document.getElementById('section-summary');
+    const $itemSummary = document.getElementById('item-summary');
+    const $questionSummary = document.getElementById('question-summary');
+    const $conceptSummary = document.getElementById('concept-summary');
 
     const typeLabels = {
         chapter: '장 전체',
@@ -37,6 +61,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function formatNumber(num) {
         return num.toLocaleString('ko-KR');
+    }
+
+    function coalesce(value, fallback) {
+        return value === undefined || value === null ? fallback : value;
     }
 
     function updateHeroMetrics({ chapters, sections, items, questions }) {
@@ -75,18 +103,25 @@ document.addEventListener('DOMContentLoaded', () => {
             counts[year] = (counts[year] || 0) + 1;
         });
 
-        const yearChips = [];
+        const yearCells = [];
 
         ALL_YEARS.forEach(year => {
             const count = counts[year] || 0;
-            const cssClass = count === 0 ? 'year-chip zero-count' : 'year-chip';
-            yearChips.push(`<span class="${cssClass}" data-year="${year}">${year.slice(2)}:${count}</span>`);
+            const classes = ['year-cell'];
+            if (count === 0) {
+                classes.push('zero-count');
+            }
+            yearCells.push(`<span class="${classes.join(' ')}" data-year="${year}" aria-label="${year}년 ${count}문제">${count}</span>`);
         });
+
+        const totalCell = `<span class="year-cell total-cell" aria-label="총 ${total}문제">${total}</span>`;
+
+        const srText = `${ALL_YEARS.map(year => `${year}년 ${counts[year] || 0}문제`).join(', ')}, 총 ${total}문제`;
 
         const html = `
             <span class="yearly-breakdown">
-                <span class="year-chips">${yearChips.join('')}</span>
-                <span class="total-chip red-total-chip">${total}</span>
+                <span class="year-grid" role="presentation">${yearCells.join('')}${totalCell}</span>
+                <span class="sr-only">${srText}</span>
             </span>
         `;
         return { html, count: total };
@@ -156,6 +191,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderQuestions(questions, $target) {
+        if (!$target) return;
+        $target.innerHTML = '';
+
         if (!questions.length) {
             $target.innerHTML = `<div class="item-empty no-question">⚠️ 이 항목에 연결된 문제가 없습니다.</div>`;
             return;
@@ -194,7 +232,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const $toggle = li.querySelector('.options-toggle');
             const $optionsUl = li.querySelector('.question-options');
 
-            $toggle.addEventListener('click', () => {
+            $toggle.addEventListener('click', (ev) => {
+                ev.stopPropagation();
                 const isExpanded = $toggle.getAttribute('aria-expanded') === 'true';
 
                 if (isExpanded) {
@@ -213,189 +252,432 @@ document.addEventListener('DOMContentLoaded', () => {
 
         $target.appendChild(ul);
     }
+    const uiState = {
+        activeChapter: null,
+        activeSectionIndex: null,
+        activeItemIndex: null,
+        pendingChapter: null
+    };
 
-    function makeChapterRow(file) {
-        const title = `제${file.replace(/\.md$/, '')}`;
-        const li = document.createElement('li');
-        li.className = 'chapter';
-        li.dataset.file = file;
+    const columnState = {
+        sectionButtons: [],
+        sectionData: [],
+        itemButtons: [],
+        itemData: []
+    };
 
-        const chapMatch = file.match(/^(\d+)/);
-        const chapterNum = chapMatch ? chapMatch[1] : '0';
+    const chapterElements = new Map();
 
-        const chapterBreakdown = getChapterTotalBreakdown(chapterNum, questionBank);
+    function chapterDisplayTitle(chapter) {
+        return `제${chapter.number}장 ${chapter.title}`;
+    }
 
-        li.innerHTML = `
-          <div class="chapter-line" role="button" aria-expanded="false">
-            <span class="toc-title">${title}</span>
-            <span class="q-total-badge">
-                ${chapterBreakdown.html}
-            </span>
-          </div>
-          <div class="sections"></div>
-        `;
+    function getChapterCacheKey(chapter) {
+        return chapter.file || `fallback-${chapter.number}`;
+    }
 
-        const $line = li.querySelector('.chapter-line');
-        const $sections = li.querySelector('.sections');
+    function buildFallbackChapter(chapterNum) {
+        const sectionsMap = new Map();
+        const prefix = `${chapterNum} |`;
 
-        $line.addEventListener('click', async () => {
-            const open = $line.getAttribute('aria-expanded') === 'true';
-            if (open) {
-                $sections.classList.remove('visible');
-                $line.setAttribute('aria-expanded', 'false');
-                return;
+        Object.entries(questionBank).forEach(([key, entries]) => {
+            if (!key.startsWith(prefix)) return;
+            const parts = key.split('|').map(part => part.trim());
+            const sectionNum = parts[1] || '0';
+            const itemNum = parts[2] || '0';
+            const questions = Array.isArray(entries) ? entries : [];
+            const firstQuestion = questions[0];
+            const itemLabel = firstQuestion && firstQuestion.item_key
+                ? firstQuestion.item_key
+                : `${chapterNum}.${sectionNum}.${itemNum}`;
+
+            if (!sectionsMap.has(sectionNum)) {
+                sectionsMap.set(sectionNum, {
+                    rawTitle: `제${Number(sectionNum)}절`,
+                    numericalKey: sectionNum,
+                    items: []
+                });
             }
 
-            if (!parsedCache.has(file)) {
-                try {
-                    const res = await fetch(BASE + encodeURIComponent(file), { cache: 'no-store' });
-                    if (!res.ok) throw new Error('fetch failed ' + res.status);
-                    const md = await res.text();
-                    parsedCache.set(file, parseChapter(md));
-                } catch (e) {
-                    console.error('장 로드 실패', e);
-                    $sections.innerHTML = `<div class="item-empty">⚠️ 파일 로드 실패.</div>`;
-                    $sections.classList.add('visible');
-                    $line.setAttribute('aria-expanded', 'true');
-                    return;
-                }
+            const section = sectionsMap.get(sectionNum);
+            if (!section.items.includes(itemLabel)) {
+                section.items.push(itemLabel);
             }
-
-            if ($sections.childElementCount === 0) {
-                const { sections } = parsedCache.get(file) || { sections: [] };
-
-                if (!sections.length) {
-                    $sections.innerHTML = `<div class="item-empty">내용 없음</div>`;
-                } else {
-                    sections.forEach((sec, secIndex) => {
-                        const secWrap = document.createElement('div');
-                        secWrap.className = 'section';
-                        secWrap.dataset.sectionIndex = String(secIndex);
-
-                        const sectionBreakdown = getSectionTotalBreakdown(chapterNum, sec.numericalKey);
-
-                        secWrap.innerHTML = `
-                          <div class="section-line" role="button" aria-expanded="false">
-                            <span class="toc-title">${sec.rawTitle}</span>
-                            <span class="q-count-badge">
-                                ${sectionBreakdown.html}
-                            </span>
-                          </div>
-                          <ul class="items"></ul>
-                        `;
-
-                        const $secLine = secWrap.querySelector('.section-line');
-                        const $items = secWrap.querySelector('.items');
-
-                        $secLine.addEventListener('click', () => {
-                            const secOpen = $secLine.getAttribute('aria-expanded') === 'true';
-                            if (secOpen) {
-                                $items.classList.remove('visible');
-                                $secLine.setAttribute('aria-expanded', 'false');
-                            } else {
-                                if ($items.childElementCount === 0) {
-                                    let itemQuestionsTotal = [];
-
-                                    if (sec.items.length === 0) {
-                                        const spacer = document.createElement('div');
-                                        spacer.className = 'item-spacer';
-                                        $items.appendChild(spacer);
-                                    } else {
-                                        sec.items.forEach((txt, itemIndex) => {
-                                            const itemLi = document.createElement('li');
-                                            itemLi.className = 'item item-line';
-                                            itemLi.setAttribute('role', 'button');
-                                            itemLi.setAttribute('aria-expanded', 'false');
-                                            itemLi.dataset.itemIndex = String(itemIndex);
-
-                                            const [c, s, i] = getNumericalParts(txt);
-                                            const numericalKey = `${c} | ${s} | ${i}`;
-
-                                            const itemQuestions = questionBank[numericalKey] || [];
-                                            const itemBreakdown = getYearlyBreakdown(itemQuestions);
-
-                                            itemQuestionsTotal = itemQuestionsTotal.concat(itemQuestions);
-
-                                            itemLi.innerHTML = `
-                                                <div class="item-title">${txt} <span class="q-count-badge">${itemBreakdown.html}</span></div>
-                                                <div class="item-content questions-output"></div>
-                                            `;
-
-                                            const $itemContent = itemLi.querySelector('.item-content');
-
-                                            itemLi.addEventListener('click', (ev) => {
-                                                ev.stopPropagation();
-                                                const itemOpen = itemLi.getAttribute('aria-expanded') === 'true';
-
-                                                if (itemOpen) {
-                                                    $itemContent.classList.remove('visible');
-                                                    itemLi.setAttribute('aria-expanded', 'false');
-                                                } else {
-                                                    if ($itemContent.childElementCount === 0) {
-                                                        renderQuestions(itemQuestions, $itemContent);
-                                                    }
-
-                                                    $itemContent.classList.add('visible');
-                                                    itemLi.setAttribute('aria-expanded', 'true');
-                                                }
-                                            });
-                                            $items.appendChild(itemLi);
-                                        });
-                                    }
-
-                                    const finalSectionBreakdown = getYearlyBreakdown(itemQuestionsTotal);
-                                    $secLine.querySelector('.q-count-badge').innerHTML = finalSectionBreakdown.html;
-                                }
-
-                                $items.classList.add('visible');
-                                $secLine.setAttribute('aria-expanded', 'true');
-                            }
-                        });
-
-                        $sections.appendChild(secWrap);
-                    });
-                }
-            }
-
-            $sections.classList.add('visible');
-            $line.setAttribute('aria-expanded', 'true');
         });
 
-        return li;
+        const sections = Array.from(sectionsMap.entries())
+            .sort((a, b) => Number(a[0]) - Number(b[0]))
+            .map(([, section]) => {
+                section.items.sort((a, b) => {
+                    const [, , aItem] = getNumericalParts(a);
+                    const [, , bItem] = getNumericalParts(b);
+                    return Number(aItem) - Number(bItem);
+                });
+                return section;
+            });
+
+        return { sections };
+    }
+
+    async function ensureChapterParsed(chapter) {
+        const cacheKey = getChapterCacheKey(chapter);
+        if (parsedCache.has(cacheKey)) {
+            return parsedCache.get(cacheKey);
+        }
+
+        if (!chapter.file) {
+            const fallback = buildFallbackChapter(chapter.number);
+            const stored = { ...fallback, source: 'fallback' };
+            parsedCache.set(cacheKey, stored);
+            return stored;
+        }
+
+        try {
+            const res = await fetch(BASE + encodeURIComponent(chapter.file), { cache: 'no-store' });
+            if (!res.ok) throw new Error('fetch failed ' + res.status);
+            const md = await res.text();
+            const parsed = parseChapter(md);
+            const stored = { ...parsed, source: 'file' };
+            parsedCache.set(cacheKey, stored);
+            return stored;
+        } catch (error) {
+            console.error('장 로드 실패', chapter.file, error);
+            const fallback = buildFallbackChapter(chapter.number);
+            const stored = { ...fallback, source: 'fallback', error: true };
+            parsedCache.set(cacheKey, stored);
+            return stored;
+        }
+    }
+
+    function setSummaryText(element, text) {
+        if (element) {
+            element.textContent = text;
+        }
+    }
+
+    function setSummaryHTML(element, html) {
+        if (element) {
+            element.innerHTML = html;
+        }
+    }
+
+    function showPlaceholder(container, message, className = 'toc-empty') {
+        if (!container) return;
+        container.innerHTML = '';
+        if (!message) return;
+        const div = document.createElement('div');
+        div.className = className;
+        div.textContent = message;
+        container.appendChild(div);
+    }
+
+    function resetConceptColumn(message = '항목을 선택하면 오른쪽 패널에 관련 개념이 표시됩니다.') {
+        showPlaceholder($conceptContainer, message, 'concept-empty');
+        setSummaryText($conceptSummary, message);
+    }
+
+    function resetSectionColumn(message = '장을 선택하면 절이 표시됩니다.') {
+        columnState.sectionButtons = [];
+        columnState.sectionData = [];
+        showPlaceholder($sectionList, message);
+        setSummaryText($sectionSummary, message);
+    }
+
+    function resetItemColumn(message = '절을 선택하면 항목이 표시됩니다.') {
+        columnState.itemButtons = [];
+        columnState.itemData = [];
+        showPlaceholder($itemList, message);
+        setSummaryText($itemSummary, message);
+    }
+
+    function resetQuestionColumn(message = '항목을 선택하면 왼쪽 패널에 관련 문제가 표시됩니다.') {
+        showPlaceholder($questionList, message, 'question-empty');
+        setSummaryText($questionSummary, message);
+        resetConceptColumn();
+    }
+
+    function renderSectionsForChapter(chapter, parsed) {
+        if (!$sectionList) return;
+
+        columnState.sectionButtons = [];
+        columnState.sectionData = [];
+
+        const sections = Array.isArray(parsed.sections) ? parsed.sections : [];
+        const chapterTitle = chapterDisplayTitle(chapter);
+        const chapterBreakdown = getChapterTotalBreakdown(chapter.number, questionBank);
+
+        if (!sections.length) {
+            const message = parsed.source === 'fallback'
+                ? '⚠️ 문제 데이터로 절을 구성할 수 없습니다. question_bank.json을 확인해주세요.'
+                : '등록된 절 정보가 없습니다.';
+            showPlaceholder($sectionList, message);
+            setSummaryHTML($sectionSummary, `${chapterTitle} · 절 0개 <span class="summary-breakdown">${chapterBreakdown.html}</span>`);
+            resetItemColumn('절이 없어 항목을 불러올 수 없습니다.');
+            resetQuestionColumn();
+            return;
+        }
+
+        $sectionList.innerHTML = '';
+
+        if (parsed.source === 'fallback') {
+            const notice = document.createElement('div');
+            notice.className = 'toc-notice';
+            notice.textContent = '⚠️ 원본 목차 파일 없이 문제 데이터를 기준으로 구성되었습니다.';
+            $sectionList.appendChild(notice);
+        }
+
+        sections.forEach((sec, index) => {
+            const sectionBreakdown = getSectionTotalBreakdown(chapter.number, sec.numericalKey);
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'section-line line-button';
+            button.dataset.index = String(index);
+            button.innerHTML = `
+                <span class="line-count">${sectionBreakdown.html}</span>
+                <span class="toc-title">${sec.rawTitle}</span>
+                <span class="line-chevron" aria-hidden="true"></span>
+            `;
+            button.addEventListener('click', (event) => {
+                event.preventDefault();
+                activateSectionByIndex(index, { scroll: true });
+            });
+
+            columnState.sectionButtons.push(button);
+            columnState.sectionData.push({
+                chapterNumber: chapter.number,
+                chapterTitle,
+                sectionIndex: index,
+                section: sec,
+                breakdown: sectionBreakdown
+            });
+
+            $sectionList.appendChild(button);
+        });
+
+        setSummaryHTML($sectionSummary, `${chapterTitle} · 절 ${sections.length}개 <span class="summary-breakdown">${chapterBreakdown.html}</span>`);
+        resetItemColumn();
+        resetQuestionColumn();
+    }
+
+    function renderItemsForSection(sectionEntry) {
+        if (!$itemList) return;
+
+        columnState.itemButtons = [];
+        columnState.itemData = [];
+
+        const section = sectionEntry.section;
+        const items = Array.isArray(section.items) ? section.items : [];
+
+        if (!items.length) {
+            showPlaceholder($itemList, '등록된 항목이 없습니다.');
+            setSummaryText($itemSummary, `${sectionEntry.chapterTitle} → ${section.rawTitle} · 항목 0개`);
+            resetQuestionColumn();
+            return;
+        }
+
+        $itemList.innerHTML = '';
+
+        items.forEach((label, itemIndex) => {
+            const [c, s, i] = getNumericalParts(label);
+            const numericalKey = `${c} | ${s} | ${i}`;
+            const questions = questionBank[numericalKey] || [];
+            const breakdown = getYearlyBreakdown(questions);
+
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'item-line line-button';
+            button.dataset.index = String(itemIndex);
+            button.innerHTML = `
+                <span class="line-count">${breakdown.html}</span>
+                <span class="item-title">${label}</span>
+                <span class="line-chevron" aria-hidden="true"></span>
+            `;
+            button.addEventListener('click', (event) => {
+                event.preventDefault();
+                activateItemByIndex(itemIndex, { scroll: true });
+            });
+
+            columnState.itemButtons.push(button);
+            columnState.itemData.push({
+                chapterNumber: sectionEntry.chapterNumber,
+                chapterTitle: sectionEntry.chapterTitle,
+                sectionIndex: sectionEntry.sectionIndex,
+                sectionTitle: section.rawTitle,
+                itemIndex,
+                itemKey: numericalKey,
+                label,
+                breakdown,
+                questions
+            });
+
+            $itemList.appendChild(button);
+        });
+
+        setSummaryText($itemSummary, `${sectionEntry.chapterTitle} → ${section.rawTitle} · 항목 ${items.length}개`);
+        resetQuestionColumn();
+    }
+
+    function activateSectionByIndex(index, options = {}) {
+        const entry = columnState.sectionData[index];
+        if (!entry) return null;
+
+        columnState.sectionButtons.forEach((btn, idx) => {
+            if (!btn) return;
+            btn.classList.toggle('is-active', idx === index);
+            btn.setAttribute('aria-pressed', idx === index ? 'true' : 'false');
+        });
+
+        uiState.activeSectionIndex = index;
+        uiState.activeItemIndex = null;
+
+        renderItemsForSection(entry);
+
+        setSummaryHTML($sectionSummary, `${entry.chapterTitle} (${columnState.sectionData.length}개 절) → ${entry.section.rawTitle} <span class="summary-breakdown">${entry.breakdown.html}</span>`);
+
+        if (options.scroll && $itemList && typeof $itemList.scrollIntoView === 'function') {
+            $itemList.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        if (options.autoSelectFirstItem && columnState.itemData.length > 0) {
+            activateItemByIndex(0, { scroll: coalesce(options.scrollToItem, false) });
+        }
+
+        return entry;
+    }
+
+    function activateItemByIndex(index, options = {}) {
+        const entry = columnState.itemData[index];
+        if (!entry) return null;
+
+        columnState.itemButtons.forEach((btn, idx) => {
+            if (!btn) return;
+            btn.classList.toggle('is-active', idx === index);
+            btn.setAttribute('aria-pressed', idx === index ? 'true' : 'false');
+        });
+
+        uiState.activeItemIndex = index;
+
+        const pathLabel = `${entry.chapterTitle} → ${entry.sectionTitle} → ${entry.label}`;
+        setSummaryHTML($questionSummary, `<span class="question-label">${pathLabel}</span> <span class="summary-breakdown">${entry.breakdown.html}</span>`);
+
+        renderQuestions(entry.questions, $questionList);
+
+        setSummaryHTML($conceptSummary, `<span class="question-label">${pathLabel}</span> <span class="concept-status">개념 자료 준비 중입니다.</span>`);
+        showPlaceholder($conceptContainer, '이 항목의 개념 자료가 준비 중입니다. JSON 파일이 추가되면 이 패널에서 확인할 수 있습니다.', 'concept-empty');
+
+        if (options.scroll) {
+            const questionHeader = document.getElementById('question-column-title');
+            if (questionHeader && typeof questionHeader.scrollIntoView === 'function') {
+                questionHeader.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        return entry;
+    }
+
+    async function activateChapter(chapterNumber, options = {}) {
+        const chapter = CHAPTERS.find(ch => ch.number === chapterNumber);
+        if (!chapter) return null;
+
+        const store = chapterElements.get(chapter.number);
+        uiState.pendingChapter = chapter.number;
+
+        chapterElements.forEach(({ button }) => {
+            if (!button) return;
+            const isCurrent = store && store.button === button;
+            button.classList.toggle('is-active', isCurrent);
+            button.setAttribute('aria-pressed', isCurrent ? 'true' : 'false');
+        });
+
+        setSummaryText($sectionSummary, '절을 불러오는 중입니다...');
+        showPlaceholder($sectionList, '절을 불러오는 중입니다.');
+        resetItemColumn();
+        resetQuestionColumn();
+
+        const parsed = await ensureChapterParsed(chapter);
+        if (uiState.pendingChapter !== chapter.number) {
+            return parsed;
+        }
+
+        uiState.activeChapter = chapter.number;
+        uiState.activeSectionIndex = null;
+        uiState.activeItemIndex = null;
+
+        const fallbackButton = (store && store.button) || document.querySelector(`button.chapter-card[data-chapter="${chapter.number}"]`);
+        const updatedStore = {
+            button: fallbackButton || null,
+            parsed
+        };
+        chapterElements.set(chapter.number, updatedStore);
+
+        chapterElements.forEach(({ button }, num) => {
+            if (!button) return;
+            const isActive = num === chapter.number;
+            button.classList.toggle('is-active', isActive);
+            button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
+
+        renderSectionsForChapter(chapter, parsed || { sections: [], source: 'fallback' });
+
+        if (options.autoSelectFirstSection && columnState.sectionData.length > 0) {
+            activateSectionByIndex(0, {
+                scroll: false,
+                autoSelectFirstItem: coalesce(options.autoSelectFirstItem, false),
+                scrollToItem: coalesce(options.scrollToItem, false)
+            });
+        }
+
+        if (options.scrollIntoView && updatedStore.button) {
+            updatedStore.button.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        return parsed;
+    }
+
+    function createChapterCard(chapter) {
+        const breakdown = getChapterTotalBreakdown(chapter.number, questionBank);
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'chapter-card';
+        button.dataset.chapter = chapter.number;
+        button.setAttribute('aria-pressed', 'false');
+        button.innerHTML = `
+            <span class="chapter-card-title">
+                <span class="chapter-card-number">제${chapter.number}장</span>
+                <span class="chapter-card-label">${chapter.title}</span>
+            </span>
+            <span class="chapter-card-count">${breakdown.html}</span>
+        `;
+
+        button.addEventListener('click', () => {
+            activateChapter(chapter.number, { autoSelectFirstSection: false, scrollIntoView: false });
+        });
+
+        chapterElements.set(chapter.number, { button, parsed: parsedCache.get(getChapterCacheKey(chapter)) || null });
+
+        return button;
     }
 
     async function preloadAllChapters() {
-        const tasks = CHAPTERS.map(async (file) => {
-            if (parsedCache.has(file)) return;
-            try {
-                const res = await fetch(BASE + encodeURIComponent(file), { cache: 'no-store' });
-                if (!res.ok) throw new Error('fetch failed ' + res.status);
-                const md = await res.text();
-                parsedCache.set(file, parseChapter(md));
-            } catch (e) {
-                console.error('사전 로드 실패', file, e);
-                parsedCache.set(file, { sections: [] });
-            }
-        });
+        const tasks = CHAPTERS.map((chapter) => ensureChapterParsed(chapter).catch(() => ({ sections: [] })));
         await Promise.all(tasks);
     }
 
     function buildSearchIndex() {
         searchIndex.length = 0;
 
-        CHAPTERS.forEach((file) => {
-            const parsed = parsedCache.get(file);
-            if (!parsed) return;
-            const chapterMatch = file.match(/^(\d+)/);
-            const chapterNum = chapterMatch ? chapterMatch[1] : '0';
-            const chapterTitle = file.replace(/\.md$/, '');
+        CHAPTERS.forEach((chapter) => {
+            const parsed = parsedCache.get(getChapterCacheKey(chapter));
+            if (!parsed || !Array.isArray(parsed.sections)) return;
+
+            const chapterNum = chapter.number;
+            const chapterTitle = chapterDisplayTitle(chapter);
 
             parsed.sections.forEach((sec, secIndex) => {
                 const sectionBreakdown = getSectionTotalBreakdown(chapterNum, sec.numericalKey);
 
                 const sectionEntry = {
                     type: 'section',
-                    file,
                     chapterNum,
                     chapterTitle,
                     sectionTitle: sec.rawTitle,
@@ -409,7 +691,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 sectionEntry.index = searchIndex.length;
                 searchIndex.push(sectionEntry);
 
-                if (sec.items.length === 0) {
+                if (!sec.items || sec.items.length === 0) {
                     return;
                 }
 
@@ -421,7 +703,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     const entry = {
                         type: 'item',
-                        file,
                         chapterNum,
                         chapterTitle,
                         sectionTitle: sec.rawTitle,
@@ -463,7 +744,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const cards = limited.map((entry, idx) => {
             const typeLabel = typeLabels[entry.type] || '항목';
-            const path = `제${entry.chapterTitle} → ${entry.sectionTitle}${entry.itemTitle ? ' → ' + entry.itemTitle : ''}`;
+            const path = `${entry.chapterTitle} → ${entry.sectionTitle}${entry.itemTitle ? ' → ' + entry.itemTitle : ''}`;
             const countLabel = entry.questionCount > 0 ? `${entry.questionCount}문제` : '연결된 문제 없음';
 
             return `
@@ -509,50 +790,25 @@ document.addEventListener('DOMContentLoaded', () => {
         renderSearchResults(results, query);
     }
 
-    function revealEntry(entry) {
+    async function revealEntry(entry) {
         if (!entry) return;
-        const chapterLi = document.querySelector(`li.chapter[data-file="${entry.file}"]`);
-        if (!chapterLi) return;
 
-        const chapterLine = chapterLi.querySelector('.chapter-line');
-        const ensureChapterOpen = () => {
-            if (chapterLine.getAttribute('aria-expanded') !== 'true') {
-                chapterLine.click();
-            }
-        };
-
-        ensureChapterOpen();
-
-        window.requestAnimationFrame(() => {
-            const sectionsContainer = chapterLi.querySelector('.sections');
-            if (!sectionsContainer) return;
-            const sectionEl = sectionsContainer.querySelectorAll('.section')[entry.sectionIndex || 0];
-            if (!sectionEl) {
-                chapterLine.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                return;
-            }
-
-            const sectionLine = sectionEl.querySelector('.section-line');
-            if (sectionLine.getAttribute('aria-expanded') !== 'true') {
-                sectionLine.click();
-            }
-
-            if (entry.type === 'item' && entry.itemIndex !== null) {
-                window.requestAnimationFrame(() => {
-                    const itemEl = sectionEl.querySelectorAll('.item')[entry.itemIndex || 0];
-                    if (!itemEl) {
-                        sectionLine.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        return;
-                    }
-                    if (itemEl.getAttribute('aria-expanded') !== 'true') {
-                        itemEl.click();
-                    }
-                    itemEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                });
-            } else {
-                sectionLine.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
+        await activateChapter(entry.chapterNum, {
+            scrollIntoView: true,
+            autoSelectFirstSection: false
         });
+
+        if (Number.isInteger(entry.sectionIndex)) {
+            activateSectionByIndex(entry.sectionIndex, {
+                scroll: true,
+                autoSelectFirstItem: false,
+                scrollToItem: true
+            });
+        }
+
+        if (entry.type === 'item' && Number.isInteger(entry.itemIndex)) {
+            activateItemByIndex(entry.itemIndex, { scroll: true });
+        }
     }
 
     if ($searchInput) {
@@ -568,15 +824,21 @@ document.addEventListener('DOMContentLoaded', () => {
             if (target.classList.contains('search-jump')) {
                 const index = Number(target.dataset.index);
                 if (!Number.isNaN(index)) {
-                    revealEntry(searchIndex[index]);
+                    void revealEntry(searchIndex[index]);
                 }
             }
         });
     }
 
+    resetSectionColumn();
+    resetItemColumn();
+    resetQuestionColumn();
+
     loadData().then(async success => {
         if (!success) {
-            $list.innerHTML = '<li class="item-empty">문제 데이터 로드에 실패했습니다. (question_bank.json이 올바른 경로에 있는지 확인해주세요.)</li>';
+            if ($chapterGrid) {
+                $chapterGrid.innerHTML = '<div class="item-empty">문제 데이터 로드에 실패했습니다. (question_bank.json이 올바른 경로에 있는지 확인해주세요.)</div>';
+            }
             if ($globalTitle) {
                 $globalTitle.textContent = '소아과학 목차';
             }
@@ -608,8 +870,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         buildSearchIndex();
 
-        CHAPTERS.forEach((file) => {
-            $list.appendChild(makeChapterRow(file));
-        });
+        if ($chapterGrid) {
+            $chapterGrid.innerHTML = '';
+            CHAPTERS.forEach((chapter) => {
+                $chapterGrid.appendChild(createChapterCard(chapter));
+            });
+        }
+
+        const firstChapter = CHAPTERS[0];
+        if (firstChapter) {
+            await activateChapter(firstChapter.number, {
+                autoSelectFirstSection: true,
+                autoSelectFirstItem: false,
+                scrollIntoView: false
+            });
+        }
     });
 });
