@@ -1,16 +1,32 @@
 document.addEventListener('DOMContentLoaded', () => {
     const BASE = './chapter/';
     const CHAPTERS = [
-        "1장 서론.md", "2장 소아의 진단.md", "3장 성장과 발달.md",
-        "4장 유전.md", "5장 소아의 영양.md", "6장 소아 양생(小兒 養生).md",
-        "7장 소아 치료법.md", "8장 신생아 및 초생병.md", "9장 감염병.md",
-        "10장 호흡기계의 병증 및 질환.md", "11장 소화기계의 병증 및 질환.md",
-        "12장 신경계의 병증 및 질환.md", "13장 소아청소년기 정신장애.md",
-        "14장 심혈관계.md", "15장 간담계의 병증 및 질환.md",
-        "16장 비뇨생식기계의 병증 및 질환.md", "17장 알레르기 질환.md",
-        "18장 면역질환.md", "19장 근·골격계 질환.md", "20장 내분비질환.md",
-        "21장 종양.md", "22장 피부질환.md", "23장 안질환.md",
-        "24장 증후.md", "25장 급증(손상).md", "26장 소아의료윤리.md"
+        { number: '1', title: '서론', file: '1장 서론.md' },
+        { number: '2', title: '소아의 진단', file: '2장 소아의 진단.md' },
+        { number: '3', title: '성장과 발달', file: '3장 성장과 발달.md' },
+        { number: '4', title: '유전', file: null },
+        { number: '5', title: '소아의 영양', file: '5장 소아의 영양.md' },
+        { number: '6', title: '소아 양생(小兒 養生)', file: '6장 소아 양생(小兒 養生).md' },
+        { number: '7', title: '소아 치료법', file: null },
+        { number: '8', title: '신생아 및 초생병', file: '8장 신생아 및 초생병.md' },
+        { number: '9', title: '감염병', file: '9장 감염병.md' },
+        { number: '10', title: '호흡기계의 병증 및 질환', file: '10장 호흡기계의 병증 및 질환.md' },
+        { number: '11', title: '소화기계의 병증 및 질환', file: '11장 소화기계의 병증 및 질환.md' },
+        { number: '12', title: '신경계의 병증 및 질환', file: '12장 신경계의 병증 및 질환.md' },
+        { number: '13', title: '소아청소년기 정신장애', file: '13장 소아청소년기 정신장애.md' },
+        { number: '14', title: '심혈관계 병증 및 질환', file: '14장 심혈관계 병증 및 질환.md' },
+        { number: '15', title: '간담계의 병증 및 질환', file: '15장 간담계의 병증 및 질환.md' },
+        { number: '16', title: '비뇨생식기계의 병증 및 질환', file: '16장 비뇨생식기계의 병증 및 질환.md' },
+        { number: '17', title: '알레르기 질환', file: '17장 알레르기 질환.md' },
+        { number: '18', title: '면역질환', file: '18장 면역질환.md' },
+        { number: '19', title: '근·골격계 질환', file: '19장 근·골격계 질환.md' },
+        { number: '20', title: '내분비질환', file: '20장 내분비질환.md' },
+        { number: '21', title: '종양', file: '21장 종양.md' },
+        { number: '22', title: '피부질환', file: '22장 피부질환.md' },
+        { number: '23', title: '안질환', file: '23장 안질환.md' },
+        { number: '24', title: '증후', file: '24장 증후.md' },
+        { number: '25', title: '급증(손상)', file: null },
+        { number: '26', title: '소아의료윤리', file: null }
     ];
 
     const parsedCache = new Map();
@@ -18,7 +34,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let questionBank = {};
     const ALL_YEARS = ["2021", "2022", "2023", "2024", "2025"];
 
-    const $list = document.getElementById('list');
+    const $chapterGrid = document.getElementById('chapter-grid');
+    const $chapterDetail = document.getElementById('chapter-detail');
     const $globalTitle = document.getElementById('global-toc-title');
     const $metricChapters = document.getElementById('metric-chapters');
     const $metricSections = document.getElementById('metric-sections');
@@ -194,7 +211,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const $toggle = li.querySelector('.options-toggle');
             const $optionsUl = li.querySelector('.question-options');
 
-            $toggle.addEventListener('click', () => {
+            $toggle.addEventListener('click', (ev) => {
+                ev.stopPropagation();
                 const isExpanded = $toggle.getAttribute('aria-expanded') === 'true';
 
                 if (isExpanded) {
@@ -214,188 +232,387 @@ document.addEventListener('DOMContentLoaded', () => {
         $target.appendChild(ul);
     }
 
-    function makeChapterRow(file) {
-        const title = `제${file.replace(/\.md$/, '')}`;
-        const li = document.createElement('li');
-        li.className = 'chapter';
-        li.dataset.file = file;
 
-        const chapMatch = file.match(/^(\d+)/);
-        const chapterNum = chapMatch ? chapMatch[1] : '0';
+    const detailState = {
+        activeChapterNumber: null,
+        activeButton: null
+    };
 
-        const chapterBreakdown = getChapterTotalBreakdown(chapterNum, questionBank);
+    function chapterDisplayTitle(chapter) {
+        return `제${chapter.number}장 ${chapter.title}`;
+    }
 
-        li.innerHTML = `
-          <div class="chapter-line" role="button" aria-expanded="false">
-            <span class="toc-title">${title}</span>
-            <span class="q-total-badge">
-                ${chapterBreakdown.html}
-            </span>
-          </div>
-          <div class="sections"></div>
+    function getChapterCacheKey(chapter) {
+        return chapter.file || `fallback-${chapter.number}`;
+    }
+
+    function buildFallbackChapter(chapterNum) {
+        const sectionsMap = new Map();
+        const prefix = `${chapterNum} |`;
+
+        Object.entries(questionBank).forEach(([key, entries]) => {
+            if (!key.startsWith(prefix)) return;
+            const parts = key.split('|').map(part => part.trim());
+            const sectionNum = parts[1] || '0';
+            const itemNum = parts[2] || '0';
+            const questions = Array.isArray(entries) ? entries : [];
+            const itemLabel = questions[0]?.item_key || `${chapterNum}.${sectionNum}.${itemNum}`;
+
+            if (!sectionsMap.has(sectionNum)) {
+                sectionsMap.set(sectionNum, {
+                    rawTitle: `제${Number(sectionNum)}절`,
+                    numericalKey: sectionNum,
+                    items: []
+                });
+            }
+
+            const section = sectionsMap.get(sectionNum);
+            if (!section.items.includes(itemLabel)) {
+                section.items.push(itemLabel);
+            }
+        });
+
+        const sections = Array.from(sectionsMap.entries())
+            .sort((a, b) => Number(a[0]) - Number(b[0]))
+            .map(([, section]) => {
+                section.items.sort((a, b) => {
+                    const [, , aItem] = getNumericalParts(a);
+                    const [, , bItem] = getNumericalParts(b);
+                    return Number(aItem) - Number(bItem);
+                });
+                return section;
+            });
+
+        return { sections };
+    }
+
+    async function ensureChapterParsed(chapter) {
+        const cacheKey = getChapterCacheKey(chapter);
+        if (parsedCache.has(cacheKey)) {
+            return parsedCache.get(cacheKey);
+        }
+
+        if (!chapter.file) {
+            const fallback = buildFallbackChapter(chapter.number);
+            const stored = { ...fallback, source: 'fallback' };
+            parsedCache.set(cacheKey, stored);
+            return stored;
+        }
+
+        try {
+            const res = await fetch(BASE + encodeURIComponent(chapter.file), { cache: 'no-store' });
+            if (!res.ok) throw new Error('fetch failed ' + res.status);
+            const md = await res.text();
+            const parsed = parseChapter(md);
+            const stored = { ...parsed, source: 'file' };
+            parsedCache.set(cacheKey, stored);
+            return stored;
+        } catch (error) {
+            console.error('장 로드 실패', chapter.file, error);
+            const fallback = buildFallbackChapter(chapter.number);
+            const stored = { ...fallback, source: 'fallback', error: true };
+            parsedCache.set(cacheKey, stored);
+            return stored;
+        }
+    }
+
+    function closeChapterDetail() {
+        if (detailState.activeButton) {
+            detailState.activeButton.classList.remove('is-active');
+            detailState.activeButton.setAttribute('aria-expanded', 'false');
+        }
+        detailState.activeButton = null;
+        detailState.activeChapterNumber = null;
+        if ($chapterDetail) {
+            $chapterDetail.innerHTML = '';
+        }
+    }
+
+    function renderChapterDetailSkeleton(chapter) {
+        if (!$chapterDetail) return;
+        const breakdown = getChapterTotalBreakdown(chapter.number, questionBank);
+        $chapterDetail.innerHTML = `
+            <div class="chapter-detail-container loading">
+                <header class="chapter-detail-header">
+                    <div class="chapter-detail-title">
+                        <h3>${chapterDisplayTitle(chapter)}</h3>
+                        <span class="chapter-detail-count">${breakdown.html}</span>
+                    </div>
+                    <button type="button" class="chapter-detail-close" aria-label="장 패널 닫기">×</button>
+                </header>
+                <div class="chapter-detail-body">
+                    <div class="chapter-detail-loading">불러오는 중...</div>
+                </div>
+            </div>
         `;
 
-        const $line = li.querySelector('.chapter-line');
-        const $sections = li.querySelector('.sections');
+        const closeBtn = $chapterDetail.querySelector('.chapter-detail-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => closeChapterDetail());
+        }
+    }
 
-        $line.addEventListener('click', async () => {
-            const open = $line.getAttribute('aria-expanded') === 'true';
-            if (open) {
-                $sections.classList.remove('visible');
-                $line.setAttribute('aria-expanded', 'false');
+    function renderChapterDetailContent(chapter, parsed) {
+        if (!$chapterDetail) return;
+
+        const breakdown = getChapterTotalBreakdown(chapter.number, questionBank);
+        const container = document.createElement('div');
+        container.className = 'chapter-detail-container';
+
+        const header = document.createElement('header');
+        header.className = 'chapter-detail-header';
+
+        const titleWrap = document.createElement('div');
+        titleWrap.className = 'chapter-detail-title';
+
+        const titleEl = document.createElement('h3');
+        titleEl.textContent = chapterDisplayTitle(chapter);
+
+        const countBadge = document.createElement('span');
+        countBadge.className = 'chapter-detail-count';
+        countBadge.innerHTML = breakdown.html;
+
+        titleWrap.append(titleEl, countBadge);
+
+        const closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.className = 'chapter-detail-close';
+        closeBtn.setAttribute('aria-label', '장 패널 닫기');
+        closeBtn.textContent = '×';
+        closeBtn.addEventListener('click', () => closeChapterDetail());
+
+        header.append(titleWrap, closeBtn);
+        container.appendChild(header);
+
+        const body = document.createElement('div');
+        body.className = 'chapter-detail-body';
+
+        if (parsed.source === 'fallback' && parsed.sections?.length) {
+            const notice = document.createElement('div');
+            notice.className = 'fallback-notice';
+            notice.textContent = '⚠️ 원본 목차 파일 없이 문제 데이터를 기준으로 구성되었습니다.';
+            body.appendChild(notice);
+        }
+
+        const sections = Array.isArray(parsed.sections) ? parsed.sections : [];
+        if (!sections.length) {
+            const empty = document.createElement('div');
+            empty.className = 'item-empty';
+            empty.textContent = parsed.source === 'fallback'
+                ? '⚠️ 해당 장의 목차 파일이 없어 문제 데이터를 구성할 수 없습니다.'
+                : '등록된 절 정보가 없습니다.';
+            body.appendChild(empty);
+        } else {
+            const sectionsWrap = document.createElement('div');
+            sectionsWrap.className = 'detail-sections';
+
+            sections.forEach((sec, secIndex) => {
+                const sectionWrap = document.createElement('div');
+                sectionWrap.className = 'detail-section';
+                sectionWrap.dataset.sectionIndex = String(secIndex);
+
+                const sectionBreakdown = getSectionTotalBreakdown(chapter.number, sec.numericalKey);
+
+                const sectionButton = document.createElement('button');
+                sectionButton.type = 'button';
+                sectionButton.className = 'section-line';
+                sectionButton.setAttribute('aria-expanded', 'false');
+
+                const sectionCount = document.createElement('span');
+                sectionCount.className = 'line-count';
+                sectionCount.innerHTML = sectionBreakdown.html;
+
+                const sectionTitle = document.createElement('span');
+                sectionTitle.className = 'toc-title';
+                sectionTitle.textContent = sec.rawTitle;
+
+                const sectionIcon = document.createElement('span');
+                sectionIcon.className = 'toggle-icon';
+                sectionIcon.setAttribute('aria-hidden', 'true');
+
+                sectionButton.append(sectionCount, sectionTitle, sectionIcon);
+
+                const itemsList = document.createElement('ul');
+                itemsList.className = 'detail-items';
+                itemsList.hidden = true;
+
+                sectionButton.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    const isOpen = sectionButton.getAttribute('aria-expanded') === 'true';
+                    if (isOpen) {
+                        itemsList.hidden = true;
+                        itemsList.classList.remove('visible');
+                        sectionButton.setAttribute('aria-expanded', 'false');
+                        return;
+                    }
+
+                    if (itemsList.childElementCount === 0) {
+                        const itemQuestionsTotal = [];
+
+                        if (!sec.items || sec.items.length === 0) {
+                            const emptyItem = document.createElement('li');
+                            emptyItem.className = 'item-empty';
+                            emptyItem.textContent = '등록된 항목이 없습니다.';
+                            itemsList.appendChild(emptyItem);
+                        } else {
+                            sec.items.forEach((txt, itemIndex) => {
+                                const itemLi = document.createElement('li');
+                                itemLi.className = 'detail-item';
+                                itemLi.dataset.itemIndex = String(itemIndex);
+
+                                const itemButton = document.createElement('button');
+                                itemButton.type = 'button';
+                                itemButton.className = 'item-line';
+                                itemButton.setAttribute('aria-expanded', 'false');
+
+                                const itemCount = document.createElement('span');
+                                itemCount.className = 'line-count';
+
+                                const [c, s, i] = getNumericalParts(txt);
+                                const numericalKey = `${c} | ${s} | ${i}`;
+
+                                const itemQuestions = questionBank[numericalKey] || [];
+                                const itemBreakdown = getYearlyBreakdown(itemQuestions);
+                                itemCount.innerHTML = itemBreakdown.html;
+                                itemQuestionsTotal.push(...itemQuestions);
+
+                                const itemTitle = document.createElement('span');
+                                itemTitle.className = 'item-title';
+                                itemTitle.textContent = txt;
+
+                                const itemIcon = document.createElement('span');
+                                itemIcon.className = 'toggle-icon';
+                                itemIcon.setAttribute('aria-hidden', 'true');
+
+                                itemButton.append(itemCount, itemTitle, itemIcon);
+
+                                const itemContent = document.createElement('div');
+                                itemContent.className = 'item-content questions-output';
+                                itemContent.hidden = true;
+
+                                itemButton.addEventListener('click', (evt) => {
+                                    evt.stopPropagation();
+                                    const itemOpen = itemButton.getAttribute('aria-expanded') === 'true';
+
+                                    if (itemOpen) {
+                                        itemContent.classList.remove('visible');
+                                        itemContent.hidden = true;
+                                        itemButton.setAttribute('aria-expanded', 'false');
+                                    } else {
+                                        if (!itemContent.dataset.loaded) {
+                                            renderQuestions(itemQuestions, itemContent);
+                                            itemContent.dataset.loaded = 'true';
+                                        }
+
+                                        itemContent.classList.add('visible');
+                                        itemContent.hidden = false;
+                                        itemButton.setAttribute('aria-expanded', 'true');
+                                    }
+                                });
+
+                                itemContent.addEventListener('click', (evt) => {
+                                    evt.stopPropagation();
+                                });
+
+                                itemLi.append(itemButton, itemContent);
+                                itemsList.appendChild(itemLi);
+                            });
+                        }
+
+                        const finalSectionBreakdown = getYearlyBreakdown(itemQuestionsTotal);
+                        sectionCount.innerHTML = finalSectionBreakdown.html;
+                    }
+
+                    itemsList.hidden = false;
+                    itemsList.classList.add('visible');
+                    sectionButton.setAttribute('aria-expanded', 'true');
+                });
+
+                sectionWrap.append(sectionButton, itemsList);
+                sectionsWrap.appendChild(sectionWrap);
+            });
+
+            body.appendChild(sectionsWrap);
+        }
+
+        container.appendChild(body);
+
+        $chapterDetail.innerHTML = '';
+        $chapterDetail.appendChild(container);
+
+        document.dispatchEvent(new CustomEvent('chapterdetailready', { detail: { chapter: chapter.number } }));
+    }
+
+    function createChapterCard(chapter) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'chapter-card';
+        button.dataset.chapter = chapter.number;
+        button.setAttribute('aria-expanded', 'false');
+
+        const breakdown = getChapterTotalBreakdown(chapter.number, questionBank);
+
+        const countSpan = document.createElement('span');
+        countSpan.className = 'chapter-card-count';
+        countSpan.innerHTML = breakdown.html;
+
+        const titleWrap = document.createElement('span');
+        titleWrap.className = 'chapter-card-title';
+        titleWrap.innerHTML = `
+            <span class="chapter-card-number">제${chapter.number}장</span>
+            <span class="chapter-card-label">${chapter.title}</span>
+        `;
+
+        button.append(countSpan, titleWrap);
+
+        button.addEventListener('click', async () => {
+            if (detailState.activeButton === button) {
+                closeChapterDetail();
                 return;
             }
 
-            if (!parsedCache.has(file)) {
-                try {
-                    const res = await fetch(BASE + encodeURIComponent(file), { cache: 'no-store' });
-                    if (!res.ok) throw new Error('fetch failed ' + res.status);
-                    const md = await res.text();
-                    parsedCache.set(file, parseChapter(md));
-                } catch (e) {
-                    console.error('장 로드 실패', e);
-                    $sections.innerHTML = `<div class="item-empty">⚠️ 파일 로드 실패.</div>`;
-                    $sections.classList.add('visible');
-                    $line.setAttribute('aria-expanded', 'true');
-                    return;
-                }
+            if (detailState.activeButton) {
+                detailState.activeButton.classList.remove('is-active');
+                detailState.activeButton.setAttribute('aria-expanded', 'false');
             }
 
-            if ($sections.childElementCount === 0) {
-                const { sections } = parsedCache.get(file) || { sections: [] };
+            detailState.activeButton = button;
+            detailState.activeChapterNumber = chapter.number;
+            button.classList.add('is-active');
+            button.setAttribute('aria-expanded', 'true');
 
-                if (!sections.length) {
-                    $sections.innerHTML = `<div class="item-empty">내용 없음</div>`;
-                } else {
-                    sections.forEach((sec, secIndex) => {
-                        const secWrap = document.createElement('div');
-                        secWrap.className = 'section';
-                        secWrap.dataset.sectionIndex = String(secIndex);
+            renderChapterDetailSkeleton(chapter);
 
-                        const sectionBreakdown = getSectionTotalBreakdown(chapterNum, sec.numericalKey);
-
-                        secWrap.innerHTML = `
-                          <div class="section-line" role="button" aria-expanded="false">
-                            <span class="toc-title">${sec.rawTitle}</span>
-                            <span class="q-count-badge">
-                                ${sectionBreakdown.html}
-                            </span>
-                          </div>
-                          <ul class="items"></ul>
-                        `;
-
-                        const $secLine = secWrap.querySelector('.section-line');
-                        const $items = secWrap.querySelector('.items');
-
-                        $secLine.addEventListener('click', () => {
-                            const secOpen = $secLine.getAttribute('aria-expanded') === 'true';
-                            if (secOpen) {
-                                $items.classList.remove('visible');
-                                $secLine.setAttribute('aria-expanded', 'false');
-                            } else {
-                                if ($items.childElementCount === 0) {
-                                    let itemQuestionsTotal = [];
-
-                                    if (sec.items.length === 0) {
-                                        const spacer = document.createElement('div');
-                                        spacer.className = 'item-spacer';
-                                        $items.appendChild(spacer);
-                                    } else {
-                                        sec.items.forEach((txt, itemIndex) => {
-                                            const itemLi = document.createElement('li');
-                                            itemLi.className = 'item item-line';
-                                            itemLi.setAttribute('role', 'button');
-                                            itemLi.setAttribute('aria-expanded', 'false');
-                                            itemLi.dataset.itemIndex = String(itemIndex);
-
-                                            const [c, s, i] = getNumericalParts(txt);
-                                            const numericalKey = `${c} | ${s} | ${i}`;
-
-                                            const itemQuestions = questionBank[numericalKey] || [];
-                                            const itemBreakdown = getYearlyBreakdown(itemQuestions);
-
-                                            itemQuestionsTotal = itemQuestionsTotal.concat(itemQuestions);
-
-                                            itemLi.innerHTML = `
-                                                <div class="item-title">${txt} <span class="q-count-badge">${itemBreakdown.html}</span></div>
-                                                <div class="item-content questions-output"></div>
-                                            `;
-
-                                            const $itemContent = itemLi.querySelector('.item-content');
-
-                                            itemLi.addEventListener('click', (ev) => {
-                                                ev.stopPropagation();
-                                                const itemOpen = itemLi.getAttribute('aria-expanded') === 'true';
-
-                                                if (itemOpen) {
-                                                    $itemContent.classList.remove('visible');
-                                                    itemLi.setAttribute('aria-expanded', 'false');
-                                                } else {
-                                                    if ($itemContent.childElementCount === 0) {
-                                                        renderQuestions(itemQuestions, $itemContent);
-                                                    }
-
-                                                    $itemContent.classList.add('visible');
-                                                    itemLi.setAttribute('aria-expanded', 'true');
-                                                }
-                                            });
-                                            $items.appendChild(itemLi);
-                                        });
-                                    }
-
-                                    const finalSectionBreakdown = getYearlyBreakdown(itemQuestionsTotal);
-                                    $secLine.querySelector('.q-count-badge').innerHTML = finalSectionBreakdown.html;
-                                }
-
-                                $items.classList.add('visible');
-                                $secLine.setAttribute('aria-expanded', 'true');
-                            }
-                        });
-
-                        $sections.appendChild(secWrap);
-                    });
-                }
+            const parsed = await ensureChapterParsed(chapter);
+            if (detailState.activeChapterNumber !== chapter.number) {
+                return;
             }
-
-            $sections.classList.add('visible');
-            $line.setAttribute('aria-expanded', 'true');
+            renderChapterDetailContent(chapter, parsed || { sections: [], source: 'fallback' });
         });
 
-        return li;
+        return button;
     }
 
     async function preloadAllChapters() {
-        const tasks = CHAPTERS.map(async (file) => {
-            if (parsedCache.has(file)) return;
-            try {
-                const res = await fetch(BASE + encodeURIComponent(file), { cache: 'no-store' });
-                if (!res.ok) throw new Error('fetch failed ' + res.status);
-                const md = await res.text();
-                parsedCache.set(file, parseChapter(md));
-            } catch (e) {
-                console.error('사전 로드 실패', file, e);
-                parsedCache.set(file, { sections: [] });
-            }
-        });
+        const tasks = CHAPTERS.map((chapter) => ensureChapterParsed(chapter).catch(() => ({ sections: [] })));
         await Promise.all(tasks);
     }
 
     function buildSearchIndex() {
         searchIndex.length = 0;
 
-        CHAPTERS.forEach((file) => {
-            const parsed = parsedCache.get(file);
-            if (!parsed) return;
-            const chapterMatch = file.match(/^(\d+)/);
-            const chapterNum = chapterMatch ? chapterMatch[1] : '0';
-            const chapterTitle = file.replace(/\.md$/, '');
+        CHAPTERS.forEach((chapter) => {
+            const parsed = parsedCache.get(getChapterCacheKey(chapter));
+            if (!parsed || !Array.isArray(parsed.sections)) return;
+
+            const chapterNum = chapter.number;
+            const chapterTitle = chapterDisplayTitle(chapter);
 
             parsed.sections.forEach((sec, secIndex) => {
                 const sectionBreakdown = getSectionTotalBreakdown(chapterNum, sec.numericalKey);
 
                 const sectionEntry = {
                     type: 'section',
-                    file,
                     chapterNum,
                     chapterTitle,
                     sectionTitle: sec.rawTitle,
@@ -409,7 +626,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 sectionEntry.index = searchIndex.length;
                 searchIndex.push(sectionEntry);
 
-                if (sec.items.length === 0) {
+                if (!sec.items || sec.items.length === 0) {
                     return;
                 }
 
@@ -421,7 +638,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     const entry = {
                         type: 'item',
-                        file,
                         chapterNum,
                         chapterTitle,
                         sectionTitle: sec.rawTitle,
@@ -463,7 +679,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const cards = limited.map((entry, idx) => {
             const typeLabel = typeLabels[entry.type] || '항목';
-            const path = `제${entry.chapterTitle} → ${entry.sectionTitle}${entry.itemTitle ? ' → ' + entry.itemTitle : ''}`;
+            const path = `${entry.chapterTitle} → ${entry.sectionTitle}${entry.itemTitle ? ' → ' + entry.itemTitle : ''}`;
             const countLabel = entry.questionCount > 0 ? `${entry.questionCount}문제` : '연결된 문제 없음';
 
             return `
@@ -511,48 +727,67 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function revealEntry(entry) {
         if (!entry) return;
-        const chapterLi = document.querySelector(`li.chapter[data-file="${entry.file}"]`);
-        if (!chapterLi) return;
+        const chapterButton = document.querySelector(`button.chapter-card[data-chapter="${entry.chapterNum}"]`);
+        if (!chapterButton) return;
 
-        const chapterLine = chapterLi.querySelector('.chapter-line');
-        const ensureChapterOpen = () => {
-            if (chapterLine.getAttribute('aria-expanded') !== 'true') {
-                chapterLine.click();
+        const focusOnTargets = () => {
+            const sectionsContainer = $chapterDetail ? $chapterDetail.querySelector('.detail-sections') : null;
+            if (!sectionsContainer) {
+                chapterButton.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                return;
             }
-        };
 
-        ensureChapterOpen();
-
-        window.requestAnimationFrame(() => {
-            const sectionsContainer = chapterLi.querySelector('.sections');
-            if (!sectionsContainer) return;
-            const sectionEl = sectionsContainer.querySelectorAll('.section')[entry.sectionIndex || 0];
+            const sectionEl = sectionsContainer.querySelectorAll('.detail-section')[entry.sectionIndex || 0];
             if (!sectionEl) {
-                chapterLine.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                chapterButton.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 return;
             }
 
             const sectionLine = sectionEl.querySelector('.section-line');
+            if (!sectionLine) {
+                sectionEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                return;
+            }
+
             if (sectionLine.getAttribute('aria-expanded') !== 'true') {
                 sectionLine.click();
             }
 
             if (entry.type === 'item' && entry.itemIndex !== null) {
                 window.requestAnimationFrame(() => {
-                    const itemEl = sectionEl.querySelectorAll('.item')[entry.itemIndex || 0];
+                    const itemEl = sectionEl.querySelectorAll('.detail-item')[entry.itemIndex || 0];
                     if (!itemEl) {
                         sectionLine.scrollIntoView({ behavior: 'smooth', block: 'start' });
                         return;
                     }
-                    if (itemEl.getAttribute('aria-expanded') !== 'true') {
-                        itemEl.click();
+                    const itemButton = itemEl.querySelector('.item-line');
+                    if (!itemButton) {
+                        itemEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        return;
                     }
-                    itemEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    if (itemButton.getAttribute('aria-expanded') !== 'true') {
+                        itemButton.click();
+                    }
+                    itemButton.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 });
             } else {
                 sectionLine.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
-        });
+        };
+
+        if (detailState.activeChapterNumber === entry.chapterNum) {
+            focusOnTargets();
+            return;
+        }
+
+        const handleReady = (event) => {
+            if (!event.detail || event.detail.chapter !== entry.chapterNum) return;
+            document.removeEventListener('chapterdetailready', handleReady);
+            focusOnTargets();
+        };
+
+        document.addEventListener('chapterdetailready', handleReady, { once: true });
+        chapterButton.click();
     }
 
     if ($searchInput) {
@@ -576,7 +811,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loadData().then(async success => {
         if (!success) {
-            $list.innerHTML = '<li class="item-empty">문제 데이터 로드에 실패했습니다. (question_bank.json이 올바른 경로에 있는지 확인해주세요.)</li>';
+            if ($chapterGrid) {
+                $chapterGrid.innerHTML = '<div class="item-empty">문제 데이터 로드에 실패했습니다. (question_bank.json이 올바른 경로에 있는지 확인해주세요.)</div>';
+            }
             if ($globalTitle) {
                 $globalTitle.textContent = '소아과학 목차';
             }
@@ -608,8 +845,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         buildSearchIndex();
 
-        CHAPTERS.forEach((file) => {
-            $list.appendChild(makeChapterRow(file));
-        });
+        if ($chapterGrid) {
+            $chapterGrid.innerHTML = '';
+            CHAPTERS.forEach((chapter) => {
+                $chapterGrid.appendChild(createChapterCard(chapter));
+            });
+        }
     });
 });
