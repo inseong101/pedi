@@ -48,9 +48,8 @@ function initDashboard() {
             conceptBase: './concept/hanbang/',
             mediaBase: './media/hanbang/',
             chapters: [
-                { number: '1', title: '장부론', file: '1장 장부론.md' },
-                { number: '2', title: '음양오행', file: '2장 음양오행.md' },
-                { number: '3', title: '영혈순환', file: '3장 영혈순환.md' }
+                { number: '1', title: '총론', file: '1장 장부론.md' },
+                { number: '2', title: '각론', file: '2장 음양오행.md' },
             ]
         }
     ];
