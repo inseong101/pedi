@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
     const BASE = './chapter/';
-    // CHAPTERS 목록은 레포지토리의 파일명을 기반으로 합니다.
     const CHAPTERS = [
         "1장 서론.md", "2장 소아의 진단.md", "3장 성장과 발달.md",
         "4장 유전.md", "5장 소아의 영양.md", "6장 소아 양생(小兒 養生).md",
@@ -28,13 +27,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // 데이터 로드: JSON 파일 두 개를 비동기적으로 로드
     async function loadData() {
         try {
+            // JSON 파일은 index.html과 같은 최상위 경로에 있다고 가정합니다.
             const [qBankRes, mappingRes] = await Promise.all([
                 fetch('question_bank.json'),
                 fetch('key_mapping.json')
             ]);
             
             if (!qBankRes.ok || !mappingRes.ok) {
-                console.error("Failed to load question data or key mapping. Please ensure JSON files are present.");
+                console.error("Failed to load question data or key mapping. Check network tab and file paths.");
                 return false;
             }
             
@@ -60,8 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (line.startsWith('# ')) {
                 if (current) sections.push(current);
                 const rawTitle = line.replace(/^#\s*/, '');
-                // # 1절 소아과학의 개념" -> "소아과학의 개념" (Section 키 생성 로직은 유지)
-                const sectionTitle = normalizeText(rawTitle.replace(/^\d+절\s*/, '')); 
+                const sectionTitle = normalizeText(rawTitle.replace(/^\d+절\s*/, ''));
                 current = { 
                     rawTitle: rawTitle, 
                     normalizedTitle: sectionTitle,
@@ -93,10 +92,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const li = document.createElement('li');
             li.classList.add('question-card');
             
-            // 문제 헤더: 년도-번호, 분류3
             const year = q.id.split('-')[0];
             const number = q.id.split('-')[1];
-            const itemTitle = q.item_key.split(' ').pop() || '항목불명';
+            // 분류3 (Item Key)에서 마지막 항목명만 추출
+            const itemTitle = q.item_key.split(' ').pop().replace(/\([^)]*\)/g, '') || '항목불명'; 
             
             li.innerHTML = `
                 <div class="question-header">
@@ -144,13 +143,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const title = `제${file.replace(/\.md$/, '')}`;
         const li = document.createElement('li');
         
-        // 🚨 핵심 수정: Chapter 이름에서 '숫자'와 '.md'만 제거하고 '장'을 남긴 후 정규화
-        // Python 코드의 키 생성 로직 (숫자+띄어쓰기만 제거)과 일치하도록 수정
-        const rawChapterName = file.replace(/^\d+장\s*/, '').replace('.md', '').trim();
+        // 🚨 최종 수정: 파일명에서 숫자+장과 .md를 모두 제거하고 정규화합니다.
+        // 이 로직은 Python이 CSV 분류1에서 "숫자+공백"을 제거한 결과와 일치하도록 보장합니다.
         
-        // 정규화된 챕터 이름 (키 매칭에 사용됨 - CSV의 분류1과 일치)
-        // file.replace(/^\d+장\s*/, '') -> '호흡기계의 병증 및 질환.md'
-        // .replace('.md', '').trim() -> '호흡기계의 병증 및 질환'
+        // 1. 파일명에서 '숫자'와 '장'을 포함한 공백 제거 (예: 10장 )
+        let rawChapterName = file.replace(/^\d+장\s*/, '');
+        // 2. '.md' 제거
+        rawChapterName = rawChapterName.replace('.md', '').trim();
+        // 3. 최종 정규화
         const normalizedChapter = normalizeText(rawChapterName);
 
 
@@ -231,7 +231,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                 }
                                 
                                 // 2. 문제 데이터 로드 및 렌더링
-                                // 🚨 핵심 수정: normalizedChapter를 사용하여 정확한 키를 만듦
                                 const normalizedKey = `${normalizedChapter} | ${sec.normalizedTitle}`;
                                 const rawCsvKey = keyMapping[normalizedKey]; 
 
@@ -270,7 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 $list.appendChild(makeChapterRow(file));
             });
         } else {
-            $list.innerHTML = '<li class="item-empty">문제 데이터 로드에 실패했습니다. (question_bank.json 또는 key_mapping.json 확인 필요)</li>';
+            $list.innerHTML = '<li class="item-empty">문제 데이터 로드에 실패했습니다. (question_bank.json 또는 key_mapping.json 파일 경로/상태 확인 필요)</li>';
         }
     });
 });
