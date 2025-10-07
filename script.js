@@ -63,6 +63,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return num.toLocaleString('ko-KR');
     }
 
+    function coalesce(value, fallback) {
+        return value === undefined || value === null ? fallback : value;
+    }
+
     function updateHeroMetrics({ chapters, sections, items, questions }) {
         if ($metricChapters) $metricChapters.textContent = formatNumber(chapters);
         if ($metricSections) $metricSections.textContent = formatNumber(sections);
