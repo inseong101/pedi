@@ -194,7 +194,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const $toggle = li.querySelector('.options-toggle');
             const $optionsUl = li.querySelector('.question-options');
 
-            $toggle.addEventListener('click', () => {
+            $toggle.addEventListener('click', (ev) => {
+                ev.stopPropagation();
                 const isExpanded = $toggle.getAttribute('aria-expanded') === 'true';
 
                 if (isExpanded) {
@@ -225,20 +226,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const chapterBreakdown = getChapterTotalBreakdown(chapterNum, questionBank);
 
-        li.innerHTML = `
-          <div class="chapter-line" role="button" aria-expanded="false">
-            <span class="toc-title">${title}</span>
-            <span class="q-total-badge">
-                ${chapterBreakdown.html}
-            </span>
-          </div>
-          <div class="sections"></div>
-        `;
+        const $line = document.createElement('button');
+        $line.type = 'button';
+        $line.className = 'chapter-line';
+        $line.setAttribute('aria-expanded', 'false');
 
-        const $line = li.querySelector('.chapter-line');
-        const $sections = li.querySelector('.sections');
+        const $lineCount = document.createElement('span');
+        $lineCount.className = 'line-count';
+        $lineCount.innerHTML = chapterBreakdown.html;
 
-        $line.addEventListener('click', async () => {
+        const $title = document.createElement('span');
+        $title.className = 'toc-title';
+        $title.textContent = title;
+
+        const $icon = document.createElement('span');
+        $icon.className = 'toggle-icon';
+        $icon.setAttribute('aria-hidden', 'true');
+
+        $line.append($lineCount, $title, $icon);
+
+        const $sections = document.createElement('div');
+        $sections.className = 'sections';
+
+        li.append($line, $sections);
+
+        $line.addEventListener('click', async (event) => {
+            event.stopPropagation();
             const open = $line.getAttribute('aria-expanded') === 'true';
             if (open) {
                 $sections.classList.remove('visible');
@@ -274,77 +287,110 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         const sectionBreakdown = getSectionTotalBreakdown(chapterNum, sec.numericalKey);
 
-                        secWrap.innerHTML = `
-                          <div class="section-line" role="button" aria-expanded="false">
-                            <span class="toc-title">${sec.rawTitle}</span>
-                            <span class="q-count-badge">
-                                ${sectionBreakdown.html}
-                            </span>
-                          </div>
-                          <ul class="items"></ul>
-                        `;
+                        const $secLine = document.createElement('button');
+                        $secLine.type = 'button';
+                        $secLine.className = 'section-line';
+                        $secLine.setAttribute('aria-expanded', 'false');
 
-                        const $secLine = secWrap.querySelector('.section-line');
-                        const $items = secWrap.querySelector('.items');
+                        const $secCount = document.createElement('span');
+                        $secCount.className = 'line-count';
+                        $secCount.innerHTML = sectionBreakdown.html;
 
-                        $secLine.addEventListener('click', () => {
+                        const $secTitle = document.createElement('span');
+                        $secTitle.className = 'toc-title';
+                        $secTitle.textContent = sec.rawTitle;
+
+                        const $secIcon = document.createElement('span');
+                        $secIcon.className = 'toggle-icon';
+                        $secIcon.setAttribute('aria-hidden', 'true');
+
+                        $secLine.append($secCount, $secTitle, $secIcon);
+
+                        const $items = document.createElement('ul');
+                        $items.className = 'items';
+
+                        $secLine.addEventListener('click', (ev) => {
+                            ev.stopPropagation();
                             const secOpen = $secLine.getAttribute('aria-expanded') === 'true';
                             if (secOpen) {
                                 $items.classList.remove('visible');
                                 $secLine.setAttribute('aria-expanded', 'false');
                             } else {
                                 if ($items.childElementCount === 0) {
-                                    let itemQuestionsTotal = [];
+                                    const itemQuestionsTotal = [];
 
                                     if (sec.items.length === 0) {
-                                        const spacer = document.createElement('div');
-                                        spacer.className = 'item-spacer';
-                                        $items.appendChild(spacer);
+                                        const emptyItem = document.createElement('li');
+                                        emptyItem.className = 'item-empty';
+                                        emptyItem.textContent = '등록된 항목이 없습니다.';
+                                        $items.appendChild(emptyItem);
                                     } else {
                                         sec.items.forEach((txt, itemIndex) => {
                                             const itemLi = document.createElement('li');
-                                            itemLi.className = 'item item-line';
-                                            itemLi.setAttribute('role', 'button');
-                                            itemLi.setAttribute('aria-expanded', 'false');
+                                            itemLi.className = 'item';
                                             itemLi.dataset.itemIndex = String(itemIndex);
+
+                                            const itemButton = document.createElement('button');
+                                            itemButton.type = 'button';
+                                            itemButton.className = 'item-line';
+                                            itemButton.setAttribute('aria-expanded', 'false');
+
+                                            const itemCount = document.createElement('span');
+                                            itemCount.className = 'line-count';
 
                                             const [c, s, i] = getNumericalParts(txt);
                                             const numericalKey = `${c} | ${s} | ${i}`;
 
                                             const itemQuestions = questionBank[numericalKey] || [];
                                             const itemBreakdown = getYearlyBreakdown(itemQuestions);
+                                            itemCount.innerHTML = itemBreakdown.html;
+                                            itemQuestionsTotal.push(...itemQuestions);
 
-                                            itemQuestionsTotal = itemQuestionsTotal.concat(itemQuestions);
+                                            const itemTitle = document.createElement('span');
+                                            itemTitle.className = 'item-title';
+                                            itemTitle.textContent = txt;
 
-                                            itemLi.innerHTML = `
-                                                <div class="item-title">${txt} <span class="q-count-badge">${itemBreakdown.html}</span></div>
-                                                <div class="item-content questions-output"></div>
-                                            `;
+                                            const itemIcon = document.createElement('span');
+                                            itemIcon.className = 'toggle-icon';
+                                            itemIcon.setAttribute('aria-hidden', 'true');
 
-                                            const $itemContent = itemLi.querySelector('.item-content');
+                                            itemButton.append(itemCount, itemTitle, itemIcon);
 
-                                            itemLi.addEventListener('click', (ev) => {
-                                                ev.stopPropagation();
-                                                const itemOpen = itemLi.getAttribute('aria-expanded') === 'true';
+                                            const itemContent = document.createElement('div');
+                                            itemContent.className = 'item-content questions-output';
+                                            itemContent.hidden = true;
+
+                                            itemButton.addEventListener('click', (evt) => {
+                                                evt.stopPropagation();
+                                                const itemOpen = itemButton.getAttribute('aria-expanded') === 'true';
 
                                                 if (itemOpen) {
-                                                    $itemContent.classList.remove('visible');
-                                                    itemLi.setAttribute('aria-expanded', 'false');
+                                                    itemContent.classList.remove('visible');
+                                                    itemContent.hidden = true;
+                                                    itemButton.setAttribute('aria-expanded', 'false');
                                                 } else {
-                                                    if ($itemContent.childElementCount === 0) {
-                                                        renderQuestions(itemQuestions, $itemContent);
+                                                    if (!itemContent.dataset.loaded) {
+                                                        renderQuestions(itemQuestions, itemContent);
+                                                        itemContent.dataset.loaded = 'true';
                                                     }
 
-                                                    $itemContent.classList.add('visible');
-                                                    itemLi.setAttribute('aria-expanded', 'true');
+                                                    itemContent.classList.add('visible');
+                                                    itemContent.hidden = false;
+                                                    itemButton.setAttribute('aria-expanded', 'true');
                                                 }
                                             });
+
+                                            itemContent.addEventListener('click', (evt) => {
+                                                evt.stopPropagation();
+                                            });
+
+                                            itemLi.append(itemButton, itemContent);
                                             $items.appendChild(itemLi);
                                         });
                                     }
 
                                     const finalSectionBreakdown = getYearlyBreakdown(itemQuestionsTotal);
-                                    $secLine.querySelector('.q-count-badge').innerHTML = finalSectionBreakdown.html;
+                                    $secCount.innerHTML = finalSectionBreakdown.html;
                                 }
 
                                 $items.classList.add('visible');
@@ -352,6 +398,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         });
 
+                        secWrap.append($secLine, $items);
                         $sections.appendChild(secWrap);
                     });
                 }
@@ -544,10 +591,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         sectionLine.scrollIntoView({ behavior: 'smooth', block: 'start' });
                         return;
                     }
-                    if (itemEl.getAttribute('aria-expanded') !== 'true') {
-                        itemEl.click();
+                    const itemButton = itemEl.querySelector('.item-line');
+                    if (!itemButton) {
+                        itemEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        return;
                     }
-                    itemEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    if (itemButton.getAttribute('aria-expanded') !== 'true') {
+                        itemButton.click();
+                    }
+                    itemButton.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 });
             } else {
                 sectionLine.scrollIntoView({ behavior: 'smooth', block: 'start' });
