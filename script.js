@@ -17,7 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let questionBank = {};
     let keyMapping = {};
 
-    // 텍스트 정규화: 괄호 및 내용 제거, 공백 정리 (Python의 normalize_text와 동일)
     function normalizeText(text) {
         if (!text) return "";
         let normalized = text.replace(/\([^)]*\)/g, '').trim();
@@ -27,7 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // 데이터 로드: JSON 파일 두 개를 비동기적으로 로드
     async function loadData() {
         try {
-            // JSON 파일은 index.html과 같은 최상위 경로에 있다고 가정합니다.
             const [qBankRes, mappingRes] = await Promise.all([
                 fetch('question_bank.json'),
                 fetch('key_mapping.json')
@@ -47,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 마크다운 파서: 섹션과 아이템 추출 (기존 코드 유지)
+    // 마크다운 파서: 섹션 번호를 추출합니다.
     function parseChapter(md) {
         const sections = [];
         let current = null;
@@ -60,10 +58,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (line.startsWith('# ')) {
                 if (current) sections.push(current);
                 const rawTitle = line.replace(/^#\s*/, '');
-                const sectionTitle = normalizeText(rawTitle.replace(/^\d+절\s*/, ''));
+                
+                // 🚨 핵심 수정: 섹션 번호만 추출합니다. (# 1절 -> 1)
+                const secMatch = rawTitle.match(/^(\d+)절\s*/);
+                const sectionNum = secMatch ? secMatch[1] : 0;
+
                 current = { 
                     rawTitle: rawTitle, 
-                    normalizedTitle: sectionTitle,
+                    numericalKey: sectionNum, // 숫자만 저장
                     items: [] 
                 };
             } else if (line.startsWith('- ')) {
@@ -78,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return { sections };
     }
 
-    // 문제 표시 DOM 생성
+    // 문제 표시 DOM 생성 (렌더링 로직은 숫자 키와 무관하므로 그대로 유지)
     function renderQuestions(questions, $target) {
         if (questions.length === 0) {
              $target.innerHTML = `<div class="item-empty no-question">⚠️ 이 Section에 연결된 2021~2025년 기출 문제가 없습니다.</div>`;
@@ -94,7 +96,6 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const year = q.id.split('-')[0];
             const number = q.id.split('-')[1];
-            // 분류3 (Item Key)에서 마지막 항목명만 추출
             const itemTitle = q.item_key.split(' ').pop().replace(/\([^)]*\)/g, '') || '항목불명'; 
             
             li.innerHTML = `
@@ -143,15 +144,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const title = `제${file.replace(/\.md$/, '')}`;
         const li = document.createElement('li');
         
-        // 🚨 최종 수정: 파일명에서 숫자+장과 .md를 모두 제거하고 정규화합니다.
-        // 이 로직은 Python이 CSV 분류1에서 "숫자+공백"을 제거한 결과와 일치하도록 보장합니다.
-        
-        // 1. 파일명에서 '숫자'와 '장'을 포함한 공백 제거 (예: 10장 )
-        let rawChapterName = file.replace(/^\d+장\s*/, '');
-        // 2. '.md' 제거
-        rawChapterName = rawChapterName.replace('.md', '').trim();
-        // 3. 최종 정규화
-        const normalizedChapter = normalizeText(rawChapterName);
+        // 🚨 핵심 수정: Chapter 번호만 추출합니다. (예: 10장 호흡기...md -> 10)
+        const chapMatch = file.match(/^(\d+)/);
+        const chapterNum = chapMatch ? chapMatch[1] : '0';
 
 
         li.className = 'chapter';
@@ -199,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
                           <div class="section-line" role="button" aria-expanded="false">${sec.rawTitle}</div>
                           <ul class="items"></ul>
                           <div class="questions-output"></div>
-                        `; // Output container for questions
+                        `;
 
                         const $secLine = secWrap.querySelector('.section-line');
                         const $items = secWrap.querySelector('.items');
@@ -231,16 +226,19 @@ document.addEventListener('DOMContentLoaded', () => {
                                 }
                                 
                                 // 2. 문제 데이터 로드 및 렌더링
-                                const normalizedKey = `${normalizedChapter} | ${sec.normalizedTitle}`;
-                                const rawCsvKey = keyMapping[normalizedKey]; 
+                                // 🚨 최종 키: "Chapter Num | Section Num"
+                                const numericalKey = `${chapterNum} | ${sec.numericalKey}`;
+                                
+                                // JSON에서는 key_mapping을 사용하지 않고 questionBank에서 바로 찾습니다.
+                                const rawCsvKey = numericalKey; // key_mapping에서 찾지 않고 바로 사용합니다.
 
-                                if (rawCsvKey && questionBank[rawCsvKey]) {
+                                if (questionBank[rawCsvKey]) {
                                     const questions = questionBank[rawCsvKey];
                                     $questionsContainer.innerHTML = ''; 
                                     renderQuestions(questions, $questionsContainer);
                                     $questionsContainer.style.display = 'block';
                                 } else {
-                                    $questionsContainer.innerHTML = `<div class="item-empty no-question">⚠️ 이 목차 (${normalizedKey})에 매칭되는 문제가 없습니다.</div>`;
+                                    $questionsContainer.innerHTML = `<div class="item-empty no-question">⚠️ 이 목차 (${numericalKey})에 매칭되는 문제가 없습니다. (키 불일치 또는 문제 없음)</div>`;
                                     $questionsContainer.style.display = 'block';
                                 }
 
