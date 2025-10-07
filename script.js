@@ -1,91 +1,117 @@
 function initDashboard() {
     const BASE = './chapter/';
     const CHAPTERS = [
-        { number: '1', title: '서론', file: '1장 서론.md' },
-        { number: '2', title: '소아의 진단', file: '2장 소아의 진단.md' },
-        { number: '3', title: '성장과 발달', file: '3장 성장과 발달.md' },
-        { number: '4', title: '유전', file: null },
-        { number: '5', title: '소아의 영양', file: '5장 소아의 영양.md' },
-        { number: '6', title: '소아 양생(小兒 養生)', file: '6장 소아 양생(小兒 養生).md' },
-        { number: '7', title: '소아 치료법', file: null },
-        { number: '8', title: '신생아 및 초생병', file: '8장 신생아 및 초생병.md' },
-        { number: '9', title: '감염병', file: '9장 감염병.md' },
-        { number: '10', title: '호흡기계의 병증 및 질환', file: '10장 호흡기계의 병증 및 질환.md' },
-        { number: '11', title: '소화기계의 병증 및 질환', file: '11장 소화기계의 병증 및 질환.md' },
-        { number: '12', title: '신경계의 병증 및 질환', file: '12장 신경계의 병증 및 질환.md' },
-        { number: '13', title: '소아청소년기 정신장애', file: '13장 소아청소년기 정신장애.md' },
-        { number: '14', title: '심혈관계 병증 및 질환', file: '14장 심혈관계 병증 및 질환.md' },
-        { number: '15', title: '간담계의 병증 및 질환', file: '15장 간담계의 병증 및 질환.md' },
-        { number: '16', title: '비뇨생식기계의 병증 및 질환', file: '16장 비뇨생식기계의 병증 및 질환.md' },
-        { number: '17', title: '알레르기 질환', file: '17장 알레르기 질환.md' },
-        { number: '18', title: '면역질환', file: '18장 면역질환.md' },
-        { number: '19', title: '근·골격계 질환', file: '19장 근·골격계 질환.md' },
-        { number: '20', title: '내분비질환', file: '20장 내분비질환.md' },
-        { number: '21', title: '종양', file: '21장 종양.md' },
-        { number: '22', title: '피부질환', file: '22장 피부질환.md' },
-        { number: '23', title: '안질환', file: '23장 안질환.md' },
-        { number: '24', title: '증후', file: '24장 증후.md' },
-        { number: '25', title: '급증(손상)', file: null },
-        { number: '26', title: '소아의료윤리', file: null }
+        { number: '1',  title: '서론',                          file: '1장 서론.md' },
+        { number: '2',  title: '소아의 진단',                   file: '2장 소아의 진단.md' },
+        { number: '3',  title: '성장과 발달',                   file: '3장 성장과 발달.md' },
+        { number: '4',  title: '유전',                          file: null },
+        { number: '5',  title: '소아의 영양',                   file: '5장 소아의 영양.md' },
+        { number: '6',  title: '소아 양생(小兒 養生)',           file: '6장 소아 양생(小兒 養生).md' },
+        { number: '7',  title: '소아 치료법',                   file: null },
+        { number: '8',  title: '신생아 및 초생병',               file: '8장 신생아 및 초생병.md' },
+        { number: '9',  title: '감염병',                        file: '9장 감염병.md' },
+        { number: '10', title: '호흡기계의 병증 및 질환',        file: '10장 호흡기계의 병증 및 질환.md' },
+        { number: '11', title: '소화기계의 병증 및 질환',        file: '11장 소화기계의 병증 및 질환.md' },
+        { number: '12', title: '신경계의 병증 및 질환',          file: '12장 신경계의 병증 및 질환.md' },
+        { number: '13', title: '소아청소년기 정신장애',          file: '13장 소아청소년기 정신장애.md' },
+        { number: '14', title: '심혈관계 병증 및 질환',          file: '14장 심혈관계 병증 및 질환.md' },
+        { number: '15', title: '간담계의 병증 및 질환',          file: '15장 간담계의 병증 및 질환.md' },
+        { number: '16', title: '비뇨생식기계의 병증 및 질환',    file: '16장 비뇨생식기계의 병증 및 질환.md' },
+        { number: '17', title: '알레르기 질환',                  file: '17장 알레르기 질환.md' },
+        { number: '18', title: '면역질환',                      file: '18장 면역질환.md' },
+        { number: '19', title: '근·골격계 질환',                 file: '19장 근·골격계 질환.md' },
+        { number: '20', title: '내분비질환',                     file: '20장 내분비질환.md' },
+        { number: '21', title: '종양',                          file: '21장 종양.md' },
+        { number: '22', title: '피부질환',                      file: '22장 피부질환.md' },
+        { number: '23', title: '안질환',                        file: '23장 안질환.md' },
+        { number: '24', title: '증후',                          file: '24장 증후.md' },
+        { number: '25', title: '급증(손상)',                    file: null },
+        { number: '26', title: '소아의료윤리',                  file: null }
     ];
 
-    const parsedCache = new Map();
-    const searchIndex = [];
-    let questionBank = {};
+    const parsedCache = new Map();     // key: chapter cache key → { sections, source }
+    const searchIndex = [];            // 빠른 검색용 인덱스
+    let   questionBank = {};           // question_bank.json
     const ALL_YEARS = ["2021", "2022", "2023", "2024", "2025"];
 
-    const $chapterGrid = document.getElementById('chapter-grid');
-    const $sectionList = document.getElementById('section-list');
-    const $itemList = document.getElementById('item-list');
-    const $questionList = document.getElementById('question-list');
+    // ===== DOM =====
+    const $chapterGrid      = document.getElementById('chapter-grid');
+    const $sectionList      = document.getElementById('section-list');
+    const $itemList         = document.getElementById('item-list');
+    const $questionList     = document.getElementById('question-list');
     const $conceptContainer = document.getElementById('concept-container');
-    const $globalTitle = document.getElementById('global-toc-title');
-    const $metricChapters = document.getElementById('metric-chapters');
-    const $metricSections = document.getElementById('metric-sections');
-    const $metricItems = document.getElementById('metric-items');
-    const $metricQuestions = document.getElementById('metric-questions');
-    const $searchInput = document.getElementById('search-input');
-    const $searchSummary = document.getElementById('search-summary');
-    const $searchResults = document.getElementById('search-results');
-    const $searchList = document.getElementById('search-list');
-    const $sectionSummary = document.getElementById('section-summary');
-    const $itemSummary = document.getElementById('item-summary');
-    const $questionSummary = document.getElementById('question-summary');
-    const $conceptSummary = document.getElementById('concept-summary');
 
-    const typeLabels = {
-        chapter: '장 전체',
-        section: '절',
-        item: '항목'
+    const $globalTitle      = document.getElementById('global-toc-title');
+    const $metricChapters   = document.getElementById('metric-chapters');
+    const $metricSections   = document.getElementById('metric-sections');
+    const $metricItems      = document.getElementById('metric-items');
+    const $metricQuestions  = document.getElementById('metric-questions');
+
+    const $searchInput      = document.getElementById('search-input');
+    const $searchSummary    = document.getElementById('search-summary');
+    const $searchResults    = document.getElementById('search-results');
+    const $searchList       = document.getElementById('search-list');
+
+    const $sectionSummary   = document.getElementById('section-summary');
+    const $itemSummary      = document.getElementById('item-summary');
+    const $questionSummary  = document.getElementById('question-summary');
+    const $conceptSummary   = document.getElementById('concept-summary');
+
+    const typeLabels = { chapter: '장 전체', section: '절', item: '항목' };
+
+    // ===== 상태 =====
+    const uiState = {
+        activeChapter: null,
+        activeSectionIndex: null,
+        activeItemIndex: null,
+        pendingChapter: null
     };
 
+    const columnState = {
+        sectionButtons: [],
+        sectionData: [],
+        itemButtons: [],
+        itemData: []
+    };
+
+    const chapterElements = new Map(); // chapter.number → { button, parsed }
+
+    // ===== 유틸 =====
     function formatNumber(num) {
         return num.toLocaleString('ko-KR');
     }
-
     function coalesce(value, fallback) {
         return value === undefined || value === null ? fallback : value;
     }
-
+    function setSummaryText(el, text) {
+        if (el) el.textContent = text;
+    }
+    function setSummaryHTML(el, html) {
+        if (el) el.innerHTML = html;
+    }
+    function chapterDisplayTitle(chapter) {
+        return `제${chapter.number}장 ${chapter.title}`;
+    }
+    function getChapterCacheKey(chapter) {
+        return `${chapter.number}::${chapter.file || 'nofile'}`;
+    }
     function updateHeroMetrics({ chapters, sections, items, questions }) {
-        if ($metricChapters) $metricChapters.textContent = formatNumber(chapters);
-        if ($metricSections) $metricSections.textContent = formatNumber(sections);
-        if ($metricItems) $metricItems.textContent = formatNumber(items);
+        if ($metricChapters)  $metricChapters.textContent  = formatNumber(chapters);
+        if ($metricSections)  $metricSections.textContent  = formatNumber(sections);
+        if ($metricItems)     $metricItems.textContent     = formatNumber(items);
         if ($metricQuestions) $metricQuestions.textContent = formatNumber(questions);
     }
-
     function getNumericalParts(itemText) {
-        const parts = itemText.match(/\d+/g);
+        const parts = String(itemText).match(/\d+/g);
         if (!parts || parts.length < 3) return ['0', '0', '0'];
         return [parts[0], parts[1], parts[2]];
     }
 
+    // ===== 데이터 로드 =====
     async function loadData() {
         try {
             const qBankRes = await fetch('question_bank.json', { cache: 'no-store' });
-            if (!qBankRes.ok) {
-                return false;
-            }
+            if (!qBankRes.ok) return false;
             questionBank = await qBankRes.json();
             return true;
         } catch (e) {
@@ -94,28 +120,23 @@ function initDashboard() {
         }
     }
 
+    // ===== 집계/배지 =====
     function getYearlyBreakdown(questions) {
         const total = questions ? questions.length : 0;
         const counts = {};
-
         (questions || []).forEach(q => {
-            const year = q.id.split('-')[0];
+            const year = String(q.id).split('-')[0];
             counts[year] = (counts[year] || 0) + 1;
         });
 
         const yearCells = [];
-
         ALL_YEARS.forEach(year => {
             const count = counts[year] || 0;
             const classes = ['year-cell'];
-            if (count === 0) {
-                classes.push('zero-count');
-            }
+            if (count === 0) classes.push('zero-count');
             yearCells.push(`<span class="${classes.join(' ')}" data-year="${year}" aria-label="${year}년 ${count}문제">${count}</span>`);
         });
-
         const totalCell = `<span class="year-cell total-cell" aria-label="총 ${total}문제">${total}</span>`;
-
         const srText = `${ALL_YEARS.map(year => `${year}년 ${counts[year] || 0}문제`).join(', ')}, 총 ${total}문제`;
 
         const html = `
@@ -126,70 +147,119 @@ function initDashboard() {
         `;
         return { html, count: total };
     }
-
-    function getChapterTotalBreakdown(chapterNum, questionBank) {
+    function getChapterTotalBreakdown(chapterNum, qbank) {
         let allQuestions = [];
         const prefix = `${chapterNum} | `;
-
-        for (const key in questionBank) {
-            if (key.startsWith(prefix)) {
-                allQuestions = allQuestions.concat(questionBank[key]);
-            }
+        for (const key in qbank) {
+            if (key.startsWith(prefix)) allQuestions = allQuestions.concat(qbank[key]);
         }
         return getYearlyBreakdown(allQuestions);
     }
-
     function getSectionTotalBreakdown(chapterNum, sectionNum) {
         let allQuestions = [];
         const prefix = `${chapterNum} | ${sectionNum}`;
         for (const key in questionBank) {
-            if (key.startsWith(prefix)) {
-                allQuestions = allQuestions.concat(questionBank[key]);
-            }
+            if (key.startsWith(prefix)) allQuestions = allQuestions.concat(questionBank[key]);
         }
         return getYearlyBreakdown(allQuestions);
     }
-
-    function getGlobalTotalBreakdown(questionBank) {
+    function getGlobalTotalBreakdown(qbank) {
         let allQuestions = [];
-        for (const key in questionBank) {
-            allQuestions = allQuestions.concat(questionBank[key]);
-        }
+        for (const key in qbank) allQuestions = allQuestions.concat(qbank[key]);
         return getYearlyBreakdown(allQuestions);
     }
 
+    // ===== 파서 =====
     function parseChapter(md) {
         const sections = [];
         let current = null;
-        const lines = md.split(/\r?\n/);
-
+        const lines = String(md).split(/\r?\n/);
         for (const raw of lines) {
             const line = raw.trim();
             if (!line) continue;
 
+            // "# 1절 소아 뭐시기" 형태
             if (line.startsWith('# ')) {
                 if (current) sections.push(current);
                 const rawTitle = line.replace(/^#\s*/, '');
-
                 const secMatch = rawTitle.match(/^(\d+)절\s*/);
                 const sectionNum = secMatch ? secMatch[1] : '0';
-
-                current = {
-                    rawTitle: rawTitle,
-                    numericalKey: sectionNum,
-                    items: []
-                };
-            } else if (line.startsWith('- ')) {
+                current = { rawTitle, numericalKey: sectionNum, items: [] };
+                continue;
+            }
+            // "- 1 | 2 | 3 항목명" 혹은 일반 리스트
+            if (line.startsWith('- ')) {
                 if (current) {
-                    const itemRaw = line.replace(/^-+\s*/, '').trim();
+                    const itemRaw = line.replace(/^-\s*/, '').trim();
                     current.items.push(itemRaw);
                 }
             }
         }
         if (current) sections.push(current);
-        return { sections };
+        return { sections, source: 'markdown' };
     }
 
+    // 파일이 없을 때 question_bank 키로 절/항목 구성
+    function buildFallbackFromQuestions(chapter) {
+        const sectionsMap = new Map(); // sectionNum → { rawTitle, numericalKey, items: [] }
+        const prefix = `${chapter.number} | `;
+
+        for (const key in questionBank) {
+            if (!key.startsWith(prefix)) continue;
+            // key: "C | S | I"
+            const parts = key.split('|').map(s => s.trim());
+            if (parts.length < 3) continue;
+            const [, s, i] = parts; // C는 chapter.number
+            if (!sectionsMap.has(s)) {
+                sectionsMap.set(s, {
+                    rawTitle: `${s}절`,
+                    numericalKey: s,
+                    items: []
+                });
+            }
+            // 항목 라벨 형태 통일: "C | S | I"
+            const label = `${chapter.number} | ${s} | ${i}`;
+            const sec = sectionsMap.get(s);
+            if (!sec.items.includes(label)) sec.items.push(label);
+        }
+
+        const sections = Array.from(sectionsMap.entries())
+            .sort((a, b) => Number(a[0]) - Number(b[0]))
+            .map(([, section]) => {
+                section.items.sort((a, b) => {
+                    const [, , aItem] = getNumericalParts(a);
+                    const [, , bItem] = getNumericalParts(b);
+                    return Number(aItem) - Number(bItem);
+                });
+                return section;
+            });
+
+        return { sections, source: 'fallback' };
+    }
+
+    async function ensureChapterParsed(chapter) {
+        const cacheKey = getChapterCacheKey(chapter);
+        if (parsedCache.has(cacheKey)) return parsedCache.get(cacheKey);
+
+        let parsed;
+        try {
+            if (chapter.file) {
+                const res = await fetch(BASE + chapter.file, { cache: 'no-store' });
+                if (res.ok) {
+                    const md = await res.text();
+                    parsed = parseChapter(md);
+                }
+            }
+        } catch (e) {
+            console.warn('장 파싱 실패(파일 경로 문제 가능):', chapter, e);
+        }
+
+        if (!parsed) parsed = buildFallbackFromQuestions(chapter);
+        parsedCache.set(cacheKey, parsed);
+        return parsed;
+    }
+
+    // ===== 문제 렌더 =====
     function renderQuestions(questions, $target) {
         if (!$target) return;
         $target.innerHTML = '';
@@ -206,26 +276,21 @@ function initDashboard() {
             const li = document.createElement('li');
             li.classList.add('question-card');
 
-            const year = q.id.split('-')[0];
-            const number = q.id.split('-')[1];
-            const itemTitle = q.item_key.split(' ').pop().replace(/\([^)]*\)/g, '') || '항목불명';
+            const [year, number] = String(q.id).split('-');
+            const itemTitle = String(q.item_key || '').split(' ').pop().replace(/\([^)]*\)/g, '') || '항목불명';
 
             li.innerHTML = `
                 <div class="question-header">
                     <span class="q-year">${year}년 ${number}번</span>
                     <span class="q-item-key">(${itemTitle})</span>
                 </div>
-
                 ${q.data_1 ? `<div class="question-data"><img src="${q.data_1}" alt="문제 자료" class="data-image"></div>` : ''}
-
-                <div class="question-body">${q.question_text}</div>
-
+                <div class="question-body">${q.question_text || ''}</div>
                 <div class="options-toggle" role="button" aria-expanded="true">
                     <span class="options-text">보기/정답 닫기</span>
                 </div>
-
                 <ul class="question-options" style="display: block;">
-                    ${q.options_html}
+                    ${q.options_html || ''}
                 </ul>
             `;
 
@@ -235,7 +300,6 @@ function initDashboard() {
             $toggle.addEventListener('click', (ev) => {
                 ev.stopPropagation();
                 const isExpanded = $toggle.getAttribute('aria-expanded') === 'true';
-
                 if (isExpanded) {
                     $optionsUl.style.display = 'none';
                     $toggle.setAttribute('aria-expanded', 'false');
@@ -252,202 +316,8 @@ function initDashboard() {
 
         $target.appendChild(ul);
     }
-    const uiState = {
-        activeChapter: null,
-        activeSectionIndex: null,
-        activeItemIndex: null,
-        pendingChapter: null
-    };
 
-    const columnState = {
-        sectionButtons: [],
-        sectionData: [],
-        itemButtons: [],
-        itemData: []
-    };
-
-    const chapterElements = new Map();
-
-        const $line = document.createElement('button');
-        $line.type = 'button';
-        $line.className = 'chapter-line';
-        $line.setAttribute('aria-expanded', 'false');
-
-        const $lineCount = document.createElement('span');
-        $lineCount.className = 'line-count';
-        $lineCount.innerHTML = chapterBreakdown.html;
-
-        const $title = document.createElement('span');
-        $title.className = 'toc-title';
-        $title.textContent = title;
-
-        const $icon = document.createElement('span');
-        $icon.className = 'toggle-icon';
-        $icon.setAttribute('aria-hidden', 'true');
-
-        $line.append($lineCount, $title, $icon);
-
-        const $sections = document.createElement('div');
-        $sections.className = 'sections';
-
-        li.append($line, $sections);
-
-        $line.addEventListener('click', async (event) => {
-            event.stopPropagation();
-            const open = $line.getAttribute('aria-expanded') === 'true';
-            if (open) {
-                $sections.classList.remove('visible');
-                $line.setAttribute('aria-expanded', 'false');
-                return;
-            }
-
-            const section = sectionsMap.get(sectionNum);
-            if (!section.items.includes(itemLabel)) {
-                section.items.push(itemLabel);
-            }
-        });
-
-        const sections = Array.from(sectionsMap.entries())
-            .sort((a, b) => Number(a[0]) - Number(b[0]))
-            .map(([, section]) => {
-                section.items.sort((a, b) => {
-                    const [, , aItem] = getNumericalParts(a);
-                    const [, , bItem] = getNumericalParts(b);
-                    return Number(aItem) - Number(bItem);
-                });
-                return section;
-            });
-
-        return { sections };
-    }
-
-                if (!sections.length) {
-                    $sections.innerHTML = `<div class="item-empty">내용 없음</div>`;
-                } else {
-                    sections.forEach((sec, secIndex) => {
-                        const secWrap = document.createElement('div');
-                        secWrap.className = 'section';
-                        secWrap.dataset.sectionIndex = String(secIndex);
-
-                        const sectionBreakdown = getSectionTotalBreakdown(chapterNum, sec.numericalKey);
-
-                        const $secLine = document.createElement('button');
-                        $secLine.type = 'button';
-                        $secLine.className = 'section-line';
-                        $secLine.setAttribute('aria-expanded', 'false');
-
-                        const $secCount = document.createElement('span');
-                        $secCount.className = 'line-count';
-                        $secCount.innerHTML = sectionBreakdown.html;
-
-                        const $secTitle = document.createElement('span');
-                        $secTitle.className = 'toc-title';
-                        $secTitle.textContent = sec.rawTitle;
-
-                        const $secIcon = document.createElement('span');
-                        $secIcon.className = 'toggle-icon';
-                        $secIcon.setAttribute('aria-hidden', 'true');
-
-                        $secLine.append($secCount, $secTitle, $secIcon);
-
-                        const $items = document.createElement('ul');
-                        $items.className = 'items';
-
-                        $secLine.addEventListener('click', (ev) => {
-                            ev.stopPropagation();
-                            const secOpen = $secLine.getAttribute('aria-expanded') === 'true';
-                            if (secOpen) {
-                                $items.classList.remove('visible');
-                                $secLine.setAttribute('aria-expanded', 'false');
-                            } else {
-                                if ($items.childElementCount === 0) {
-                                    const itemQuestionsTotal = [];
-
-                                    if (sec.items.length === 0) {
-                                        const emptyItem = document.createElement('li');
-                                        emptyItem.className = 'item-empty';
-                                        emptyItem.textContent = '등록된 항목이 없습니다.';
-                                        $items.appendChild(emptyItem);
-                                    } else {
-                                        sec.items.forEach((txt, itemIndex) => {
-                                            const itemLi = document.createElement('li');
-                                            itemLi.className = 'item';
-                                            itemLi.dataset.itemIndex = String(itemIndex);
-
-                                            const itemButton = document.createElement('button');
-                                            itemButton.type = 'button';
-                                            itemButton.className = 'item-line';
-                                            itemButton.setAttribute('aria-expanded', 'false');
-
-                                            const itemCount = document.createElement('span');
-                                            itemCount.className = 'line-count';
-
-                                            const [c, s, i] = getNumericalParts(txt);
-                                            const numericalKey = `${c} | ${s} | ${i}`;
-
-                                            const itemQuestions = questionBank[numericalKey] || [];
-                                            const itemBreakdown = getYearlyBreakdown(itemQuestions);
-                                            itemCount.innerHTML = itemBreakdown.html;
-                                            itemQuestionsTotal.push(...itemQuestions);
-
-                                            const itemTitle = document.createElement('span');
-                                            itemTitle.className = 'item-title';
-                                            itemTitle.textContent = txt;
-
-                                            const itemIcon = document.createElement('span');
-                                            itemIcon.className = 'toggle-icon';
-                                            itemIcon.setAttribute('aria-hidden', 'true');
-
-                                            itemButton.append(itemCount, itemTitle, itemIcon);
-
-                                            const itemContent = document.createElement('div');
-                                            itemContent.className = 'item-content questions-output';
-                                            itemContent.hidden = true;
-
-                                            itemButton.addEventListener('click', (evt) => {
-                                                evt.stopPropagation();
-                                                const itemOpen = itemButton.getAttribute('aria-expanded') === 'true';
-
-                                                if (itemOpen) {
-                                                    itemContent.classList.remove('visible');
-                                                    itemContent.hidden = true;
-                                                    itemButton.setAttribute('aria-expanded', 'false');
-                                                } else {
-                                                    if (!itemContent.dataset.loaded) {
-                                                        renderQuestions(itemQuestions, itemContent);
-                                                        itemContent.dataset.loaded = 'true';
-                                                    }
-
-                                                    itemContent.classList.add('visible');
-                                                    itemContent.hidden = false;
-                                                    itemButton.setAttribute('aria-expanded', 'true');
-                                                }
-                                            });
-
-                                            itemContent.addEventListener('click', (evt) => {
-                                                evt.stopPropagation();
-                                            });
-
-                                            itemLi.append(itemButton, itemContent);
-                                            $items.appendChild(itemLi);
-                                        });
-                                    }
-
-                                    const finalSectionBreakdown = getYearlyBreakdown(itemQuestionsTotal);
-                                    $secCount.innerHTML = finalSectionBreakdown.html;
-                                }
-
-                                $items.classList.add('visible');
-                                $secLine.setAttribute('aria-expanded', 'true');
-                            }
-                        });
-
-                        secWrap.append($secLine, $items);
-                        $sections.appendChild(secWrap);
-                    });
-                }
-            }
-
+    // ===== 자리 표시자 =====
     function showPlaceholder(container, message, className = 'toc-empty') {
         if (!container) return;
         container.innerHTML = '';
@@ -457,32 +327,29 @@ function initDashboard() {
         div.textContent = message;
         container.appendChild(div);
     }
-
     function resetConceptColumn(message = '항목을 선택하면 오른쪽 패널에 관련 개념이 표시됩니다.') {
         showPlaceholder($conceptContainer, message, 'concept-empty');
         setSummaryText($conceptSummary, message);
     }
-
     function resetSectionColumn(message = '장을 선택하면 절이 표시됩니다.') {
         columnState.sectionButtons = [];
         columnState.sectionData = [];
         showPlaceholder($sectionList, message);
         setSummaryText($sectionSummary, message);
     }
-
     function resetItemColumn(message = '절을 선택하면 항목이 표시됩니다.') {
         columnState.itemButtons = [];
         columnState.itemData = [];
         showPlaceholder($itemList, message);
         setSummaryText($itemSummary, message);
     }
-
     function resetQuestionColumn(message = '항목을 선택하면 왼쪽 패널에 관련 문제가 표시됩니다.') {
         showPlaceholder($questionList, message, 'question-empty');
         setSummaryText($questionSummary, message);
         resetConceptColumn();
     }
 
+    // ===== 렌더링: 절/항목 =====
     function renderSectionsForChapter(chapter, parsed) {
         if (!$sectionList) return;
 
@@ -604,6 +471,7 @@ function initDashboard() {
         resetQuestionColumn();
     }
 
+    // ===== 활성화 로직 =====
     function activateSectionByIndex(index, options = {}) {
         const entry = columnState.sectionData[index];
         if (!entry) return null;
@@ -619,16 +487,17 @@ function initDashboard() {
 
         renderItemsForSection(entry);
 
-        setSummaryHTML($sectionSummary, `${entry.chapterTitle} (${columnState.sectionData.length}개 절) → ${entry.section.rawTitle} <span class="summary-breakdown">${entry.breakdown.html}</span>`);
+        setSummaryHTML(
+            $sectionSummary,
+            `${entry.chapterTitle} (${columnState.sectionData.length}개 절) → ${entry.section.rawTitle} <span class="summary-breakdown">${entry.breakdown.html}</span>`
+        );
 
         if (options.scroll) {
             $itemList?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-
         if (options.autoSelectFirstItem && columnState.itemData.length > 0) {
             activateItemByIndex(0, { scroll: options.scrollToItem ?? false });
         }
-
         return entry;
     }
 
@@ -646,7 +515,6 @@ function initDashboard() {
 
         const pathLabel = `${entry.chapterTitle} → ${entry.sectionTitle} → ${entry.label}`;
         setSummaryHTML($questionSummary, `<span class="question-label">${pathLabel}</span> <span class="summary-breakdown">${entry.breakdown.html}</span>`);
-
         renderQuestions(entry.questions, $questionList);
 
         setSummaryHTML($conceptSummary, `<span class="question-label">${pathLabel}</span> <span class="concept-status">개념 자료 준비 중입니다.</span>`);
@@ -655,7 +523,6 @@ function initDashboard() {
         if (options.scroll) {
             document.getElementById('question-column-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-
         return entry;
     }
 
@@ -679,19 +546,14 @@ function initDashboard() {
         resetQuestionColumn();
 
         const parsed = await ensureChapterParsed(chapter);
-        if (uiState.pendingChapter !== chapter.number) {
-            return parsed;
-        }
+        if (uiState.pendingChapter !== chapter.number) return parsed;
 
         uiState.activeChapter = chapter.number;
         uiState.activeSectionIndex = null;
         uiState.activeItemIndex = null;
 
         const fallbackButton = store?.button || document.querySelector(`button.chapter-card[data-chapter="${chapter.number}"]`);
-        const updatedStore = {
-            button: fallbackButton || null,
-            parsed
-        };
+        const updatedStore = { button: fallbackButton || null, parsed };
         chapterElements.set(chapter.number, updatedStore);
 
         chapterElements.forEach(({ button }, num) => {
@@ -710,11 +572,9 @@ function initDashboard() {
                 scrollToItem: options.scrollToItem ?? false
             });
         }
-
         if (options.scrollIntoView && updatedStore.button) {
             updatedStore.button.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-
         return parsed;
     }
 
@@ -732,21 +592,21 @@ function initDashboard() {
             </span>
             <span class="chapter-card-count">${breakdown.html}</span>
         `;
-
         button.addEventListener('click', () => {
             activateChapter(chapter.number, { autoSelectFirstSection: false, scrollIntoView: false });
         });
-
         chapterElements.set(chapter.number, { button, parsed: parsedCache.get(getChapterCacheKey(chapter)) || null });
-
         return button;
     }
 
     async function preloadAllChapters() {
-        const tasks = CHAPTERS.map((chapter) => ensureChapterParsed(chapter).catch(() => ({ sections: [] })));
+        const tasks = CHAPTERS.map((chapter) =>
+            ensureChapterParsed(chapter).catch(() => ({ sections: [], source: 'fallback' }))
+        );
         await Promise.all(tasks);
     }
 
+    // ===== 검색 인덱스/동작 =====
     function buildSearchIndex() {
         searchIndex.length = 0;
 
@@ -775,11 +635,7 @@ function initDashboard() {
                 sectionEntry.index = searchIndex.length;
                 searchIndex.push(sectionEntry);
 
-                if (!sec.items || sec.items.length === 0) {
-                    return;
-                }
-
-                sec.items.forEach((txt, itemIndex) => {
+                (sec.items || []).forEach((txt, itemIndex) => {
                     const [c, s, i] = getNumericalParts(txt);
                     const numericalKey = `${c} | ${s} | ${i}`;
                     const itemQuestions = questionBank[numericalKey] || [];
@@ -811,7 +667,6 @@ function initDashboard() {
             $searchSummary.textContent = '검색어를 입력하면 관련 장·절·항목과 문제 수가 정리되어 표시됩니다.';
             return;
         }
-
         $searchResults.hidden = false;
 
         if (!results.length) {
@@ -826,7 +681,7 @@ function initDashboard() {
             ? `${formatNumber(results.length)}개의 항목 중 상위 ${formatNumber(limited.length)}개만 표시합니다.`
             : `${formatNumber(results.length)}개의 항목이 검색되었습니다.`;
 
-        const cards = limited.map((entry, idx) => {
+        const cards = limited.map((entry) => {
             const typeLabel = typeLabels[entry.type] || '항목';
             const path = `${entry.chapterTitle} → ${entry.sectionTitle}${entry.itemTitle ? ' → ' + entry.itemTitle : ''}`;
             const countLabel = entry.questionCount > 0 ? `${entry.questionCount}문제` : '연결된 문제 없음';
@@ -850,23 +705,19 @@ function initDashboard() {
         if (overflow > 0) {
             cards.push(`<div class="search-summary">${formatNumber(overflow)}개 항목이 더 있습니다. 키워드를 구체화해보세요.</div>`);
         }
-
         $searchList.innerHTML = cards.join('');
     }
 
     function performSearch(value) {
-        const query = value.trim();
+        const query = String(value || '').trim();
         if (!query) {
             renderSearchResults([], '');
             return;
         }
-
         const normalized = query.toLowerCase();
         const results = searchIndex.filter(entry => entry.searchText.includes(normalized));
         results.sort((a, b) => {
-            if (b.questionCount !== a.questionCount) {
-                return b.questionCount - a.questionCount;
-            }
+            if (b.questionCount !== a.questionCount) return b.questionCount - a.questionCount;
             const aLabel = (a.itemTitle || a.sectionTitle || a.chapterTitle);
             const bLabel = (b.itemTitle || b.sectionTitle || b.chapterTitle);
             return aLabel.localeCompare(bLabel, 'ko');
@@ -877,11 +728,13 @@ function initDashboard() {
     async function revealEntry(entry) {
         if (!entry) return;
 
+        // 1) 장 활성화
         await activateChapter(entry.chapterNum, {
             scrollIntoView: true,
             autoSelectFirstSection: false
         });
 
+        // 2) 절 선택
         if (Number.isInteger(entry.sectionIndex)) {
             activateSectionByIndex(entry.sectionIndex, {
                 scroll: true,
@@ -890,35 +743,25 @@ function initDashboard() {
             });
         }
 
-            if (entry.type === 'item' && entry.itemIndex !== null) {
-                window.requestAnimationFrame(() => {
-                    const itemEl = sectionEl.querySelectorAll('.item')[entry.itemIndex || 0];
-                    if (!itemEl) {
-                        sectionLine.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        return;
-                    }
-                    const itemButton = itemEl.querySelector('.item-line');
-                    if (!itemButton) {
-                        itemEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        return;
-                    }
-                    if (itemButton.getAttribute('aria-expanded') !== 'true') {
-                        itemButton.click();
-                    }
-                    itemButton.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                });
-            } else {
-                sectionLine.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // 3) 항목이면 해당 아이템 버튼 찾아 열기
+        if (entry.type === 'item' && Number.isInteger(entry.itemIndex)) {
+            const itemButtons = $itemList?.querySelectorAll('.item-line');
+            const btn = itemButtons?.[entry.itemIndex];
+            if (btn) {
+                if (btn.getAttribute('aria-expanded') !== 'true') {
+                    btn.click(); // 질문 패널 열기
+                }
+                btn.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
-        });
+        }
     }
 
+    // ===== 이벤트 =====
     if ($searchInput) {
         $searchInput.addEventListener('input', (event) => {
             performSearch(event.target.value || '');
         });
     }
-
     if ($searchList) {
         $searchList.addEventListener('click', (event) => {
             const target = event.target;
@@ -932,6 +775,7 @@ function initDashboard() {
         });
     }
 
+    // ===== 초기화 흐름 =====
     resetSectionColumn();
     resetItemColumn();
     resetQuestionColumn();
@@ -941,9 +785,7 @@ function initDashboard() {
             if ($chapterGrid) {
                 $chapterGrid.innerHTML = '<div class="item-empty">문제 데이터 로드에 실패했습니다. (question_bank.json이 올바른 경로에 있는지 확인해주세요.)</div>';
             }
-            if ($globalTitle) {
-                $globalTitle.textContent = '소아과학 목차';
-            }
+            if ($globalTitle) $globalTitle.textContent = '소아과학 목차';
             return;
         }
 
@@ -957,9 +799,7 @@ function initDashboard() {
         const structuralCounts = Array.from(parsedCache.values()).reduce((acc, parsed) => {
             const sections = parsed.sections || [];
             acc.sections += sections.length;
-            sections.forEach(sec => {
-                acc.items += sec.items.length;
-            });
+            sections.forEach(sec => { acc.items += (sec.items || []).length; });
             return acc;
         }, { sections: 0, items: 0 });
 
@@ -990,6 +830,7 @@ function initDashboard() {
     });
 }
 
+// DOMContentLoaded 바인딩
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initDashboard, { once: true });
 } else {
