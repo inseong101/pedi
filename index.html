@@ -12,10 +12,87 @@
     <a href="/">← 포털로 돌아가기</a>
   </div>
 
-  <div class="wrap">
-    <h1 id="global-toc-title">소아과학 목차</h1>
-    <ul id="list"></ul>
-  </div>
+  <main class="wrap">
+    <header class="hero">
+      <p class="hero-eyebrow">Pedi board review 2021-2025</p>
+      <h1 id="global-toc-title">소아과학 목차</h1>
+      <p class="hero-desc">
+        기출 5개년 데이터를 기반으로 장·절·항목별 개념과 문제 출제 현황을 한눈에 정리했습니다.
+        검색을 통해 필요한 개념을 빠르게 찾고, 바로 아래에서 연도별 출제 빈도와 문제를 확인하세요.
+      </p>
+      <dl class="hero-metrics">
+        <div>
+          <dt>장 수</dt>
+          <dd id="metric-chapters">0</dd>
+        </div>
+        <div>
+          <dt>절 수</dt>
+          <dd id="metric-sections">0</dd>
+        </div>
+        <div>
+          <dt>항목 수</dt>
+          <dd id="metric-items">0</dd>
+        </div>
+        <div>
+          <dt>총 기출</dt>
+          <dd id="metric-questions">0</dd>
+        </div>
+      </dl>
+    </header>
+
+    <section class="guide" aria-labelledby="guide-title">
+      <h2 id="guide-title">Codex 대시보드 사용 가이드</h2>
+      <p class="guide-intro">
+        저장소를 GitHub Pages에 올렸다면 아래 단계에 따라 <strong>Codex</strong> 대시보드를 바로 활용할 수 있습니다.
+        각 단계는 실제 페이지 구성과 연결되어 있어, 그대로 따라 하면 누구든지 빠르게 정리된 자료를 확인할 수 있습니다.
+      </p>
+      <ol class="guide-steps">
+        <li>
+          <h3>배포 확인</h3>
+          <p>
+            <code>Settings → Pages</code>에서 <em>Deploy from a branch</em>를 선택하고 <code>main</code>과 <code>/root</code>를 지정합니다.
+            주소는 <code>https://&lt;깃허브아이디&gt;.github.io/pedi/</code>와 같이 생성되며, 몇 분 후 접속하면 최신 목차가 자동으로 로드됩니다.
+          </p>
+        </li>
+        <li>
+          <h3>데이터 갱신</h3>
+          <p>
+            <code>chapter/</code> 디렉터리에는 장별 Markdown이, <code>question_bank.json</code>에는 문제 메타데이터가 들어 있습니다.
+            파일을 수정하거나 새 문제를 추가한 뒤 커밋하면, 다음 배포에서 Codex 검색 인덱스가 자동으로 재생성됩니다.
+          </p>
+        </li>
+        <li>
+          <h3>검색과 딥링크</h3>
+          <p>
+            상단의 “개념/문제 검색” 상자에 키워드를 입력하면 장·절·항목·문제가 묶인 카드가 표시됩니다.
+            카드의 “바로 가기” 링크를 누르면 해당 목차 섹션으로 스크롤되며, 연도 칩을 클릭하면 연도별 출제 내역만 모아볼 수 있습니다.
+          </p>
+        </li>
+      </ol>
+      <div class="guide-note" role="note">
+        <strong>Tip.</strong> 로컬에서도 확인하고 싶다면 <code>python -m http.server</code>로 간단한 서버를 띄우고
+        <code>http://localhost:8000</code>에 접속하세요. GitHub Pages와 동일한 구성이 로딩됩니다.
+      </div>
+    </section>
+
+    <section class="search-panel" aria-labelledby="search-label">
+      <div class="search-field">
+        <label id="search-label" for="search-input">개념/문제 검색</label>
+        <input type="search" id="search-input" placeholder="예: 신생아 황달, 간질, 변증" autocomplete="off" />
+      </div>
+      <p id="search-summary" class="search-summary">검색어를 입력하면 관련 장·절·항목과 문제 수가 정리되어 표시됩니다.</p>
+    </section>
+
+    <section id="search-results" class="search-results" aria-live="polite" hidden>
+      <h2>검색 결과</h2>
+      <div id="search-list" class="search-list"></div>
+    </section>
+
+    <section class="toc-section" aria-labelledby="global-toc-title">
+      <h2 class="toc-heading">장별 목차</h2>
+      <ul id="list" class="toc-list"></ul>
+    </section>
+  </main>
 
   <!-- 외부 JS 불러오기 -->
   <script src="script.js"></script>
