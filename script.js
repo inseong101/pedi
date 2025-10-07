@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+function initDashboard() {
     const BASE = './chapter/';
     const CHAPTERS = [
         { number: '1', title: '서론', file: '1장 서론.md' },
@@ -988,4 +988,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     });
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initDashboard, { once: true });
+} else {
+    initDashboard();
+}
