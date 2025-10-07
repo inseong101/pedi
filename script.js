@@ -3,10 +3,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const CHAPTERS = [
         "1장 서론.md", "2장 소아의 진단.md", "3장 성장과 발달.md",
         "4장 유전.md", "5장 소아의 영양.md", "6장 소아 양생(小兒 養生).md",
-        "7장 소아 치료법.md", "8장 신생아 및 초생병.md", "9장 감염병.md",
+        "7장 소아 치료법.md", "8장 신생아 미ᆆ 초생병.md", "9장 감염병.md",
         "10장 호흡기계의 병증 및 질환.md", "11장 소화기계의 병증 및 질환.md",
         "12장 신경계의 병증 및 질환.md", "13장 소아청소년기 정신장애.md",
-        "14장 심혈관계.md", "15장 간담계의 병증 및 질환.md",
+        "14장 심혈관계.md", "15장 간담계의 병즌 및 질환.md",
         "16장 비뇨생식기계의 병증 및 질환.md", "17장 알레르기 질환.md",
         "18장 면역질환.md", "19장 근·골격계 질환.md", "20장 내분비질환.md",
         "21장 종양.md", "22장 피부질환.md", "23장 안질환.md",
@@ -22,7 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return normalized.replace(/\s+/g, ' ');
     }
     
-    // 데이터 로드
     async function loadData() {
         try {
             const qBankRes = await fetch('question_bank.json');
@@ -38,31 +37,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 🚨 핵심 함수: 문제 배열을 받아 연도별 개수를 계산하고 HTML 문자열을 반환
+    // 🚨 핵심 수정: 연도별 개수를 계산하고 디자인을 위한 HTML 구조를 반환
     function getYearlyBreakdown(questions) {
-        if (!questions || questions.length === 0) return { html: "(0 문제)", count: 0 };
+        if (!questions || questions.length === 0) return { html: `<span class="yearly-breakdown"><span class="total-count-label">(0 문제)</span></span>`, count: 0 };
         
         const counts = {};
         let total = 0;
         
-        // 연도별 카운트 계산
         questions.forEach(q => {
             const year = q.id.split('-')[0];
             counts[year] = (counts[year] || 0) + 1;
             total++;
         });
 
-        // HTML 문자열 생성 (2021년 5개, 2022년 3개...)
         const years = ["2021", "2022", "2023", "2024", "2025"];
-        const parts = [];
+        const yearChips = [];
         
         years.forEach(year => {
-            if (counts[year]) {
-                parts.push(`${year}년 ${counts[year]}개`);
-            }
+            const count = counts[year] || 0; // 0개라도 표시
+            const cssClass = count === 0 ? 'year-chip zero-count' : 'year-chip';
+            
+            // 각 연도별 개수를 뱃지 구조로 변환
+            yearChips.push(`<span class="${cssClass}" data-year="${year}">${year.slice(2)}:${count}</span>`);
         });
 
-        const html = `<span class="q-count-detail">(${total} 문제: ${parts.join(', ')})</span>`;
+        const html = `
+            <span class="yearly-breakdown">
+                <span class="total-count-label">(${total} 문제)</span>
+                <span class="year-chips">${yearChips.join('')}</span>
+            </span>
+        `;
         return { html, count: total };
     }
     
@@ -71,7 +75,6 @@ document.addEventListener('DOMContentLoaded', () => {
         let allQuestions = [];
         const prefix = `${chapterNum} | `;
         
-        // 해당 Chapter 번호로 시작하는 모든 Section의 질문을 합산
         for (const key in questionBank) {
             if (key.startsWith(prefix)) {
                 allQuestions = allQuestions.concat(questionBank[key]);
@@ -83,8 +86,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Global Total Count 계산
     function getGlobalTotalBreakdown(questionBank) {
         let allQuestions = [];
-        
-        // questionBank의 모든 질문을 합산
         for (const key in questionBank) {
             allQuestions = allQuestions.concat(questionBank[key]);
         }
@@ -193,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const chapMatch = file.match(/^(\d+)/);
         const chapterNum = chapMatch ? chapMatch[1] : '0';
         
-        // 🚨 1. Chapter 전체 문제 수 계산 및 HTML 생성
+        // Chapter 전체 문제 수 계산 및 HTML 생성
         const chapterBreakdown = getChapterTotalBreakdown(chapterNum, questionBank);
 
 
@@ -201,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
         li.innerHTML = `
           <div class="chapter-line" role="button" aria-expanded="false">
             ${title} 
-            <span class="q-total-badge" style="font-weight: 700; color: #111; margin-left: 10px;">
+            <span class="q-total-badge">
                 ${chapterBreakdown.html}
             </span>
           </div>
@@ -244,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const secWrap = document.createElement('div');
                         secWrap.className = 'section';
                         
-                        // 🚨 2. Section별 문제 수 계산 및 HTML 생성
+                        // Section별 문제 개수 계산 및 HTML 생성
                         const numericalKey = `${chapterNum} | ${sec.numericalKey}`;
                         const sectionQuestions = questionBank[numericalKey] || [];
                         const sectionBreakdown = getYearlyBreakdown(sectionQuestions);
@@ -252,7 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         secWrap.innerHTML = `
                           <div class="section-line" role="button" aria-expanded="false">
                             ${sec.rawTitle} 
-                            <span class="q-count-badge" style="font-weight: 600; color: #0a66c2; margin-left: 10px;">
+                            <span class="q-count-badge">
                                 ${sectionBreakdown.html}
                             </span>
                           </div>
@@ -296,7 +297,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                     renderQuestions(questions, $questionsContainer);
                                     $questionsContainer.style.display = 'block';
                                 } else {
-                                    console.log('Key not found:', numericalKey);
                                     $questionsContainer.innerHTML = `<div class="item-empty no-question">⚠️ 이 목차 (${numericalKey})에 매칭되는 문제가 없습니다.</div>`;
                                     $questionsContainer.style.display = 'block';
                                 }
@@ -324,10 +324,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const $globalTitle = document.getElementById('global-toc-title');
         
         if (success) {
-            // 🚨 3. Global Total 계산 및 표시
+            // Global Total 계산 및 표시
             const globalBreakdown = getGlobalTotalBreakdown(questionBank);
             if ($globalTitle) {
-                 $globalTitle.innerHTML = `소아과학 목차 <span class="q-global-badge" style="font-size: 16px; font-weight: 500; margin-left: 10px;">${globalBreakdown.html}</span>`;
+                 $globalTitle.innerHTML = `소아과학 목차 <span class="q-global-badge">${globalBreakdown.html}</span>`;
             }
 
             CHAPTERS.forEach((file) => {
