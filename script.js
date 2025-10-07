@@ -22,14 +22,27 @@ document.addEventListener('DOMContentLoaded', () => {
         return normalized.replace(/\s+/g, ' ');
     }
     
+    // 챕터별 총 문제 수를 계산하는 헬퍼 함수
+    function getChapterTotalCount(chapterNum, questionBank) {
+        let totalCount = 0;
+        const prefix = `${chapterNum} | `;
+        
+        // questionBank 키를 순회하며 해당 챕터 번호로 시작하는 키의 문제 수를 합산
+        for (const key in questionBank) {
+            if (key.startsWith(prefix)) {
+                totalCount += questionBank[key].length;
+            }
+        }
+        return totalCount;
+    }
+
     // 데이터 로드: question_bank만 로드합니다.
     async function loadData() {
         try {
-            // question_bank.json 파일은 최상위 경로에 있다고 가정합니다.
             const qBankRes = await fetch('question_bank.json');
             
             if (!qBankRes.ok) {
-                console.error("Failed to load question data (question_bank.json). Check file path/network.");
+                console.error("Failed to load question data (question_bank.json). Check network tab and file paths.");
                 return false;
             }
             
@@ -57,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // 섹션 번호만 추출합니다. (# 1절 -> 1)
                 const secMatch = rawTitle.match(/^(\d+)절\s*/);
-                const sectionNum = secMatch ? secMatch[1] : '0'; // String '1', '2' or '0'
+                const sectionNum = secMatch ? secMatch[1] : '0';
 
                 current = { 
                     rawTitle: rawTitle, 
@@ -144,11 +157,19 @@ document.addEventListener('DOMContentLoaded', () => {
         // Chapter 번호만 문자열로 추출 (예: '10')
         const chapMatch = file.match(/^(\d+)/);
         const chapterNum = chapMatch ? chapMatch[1] : '0';
+        
+        // 🚨 Chapter 전체 문제 수 계산
+        const chapterTotalCount = getChapterTotalCount(chapterNum, questionBank);
 
 
         li.className = 'chapter';
         li.innerHTML = `
-          <div class="chapter-line" role="button" aria-expanded="false">${title}</div>
+          <div class="chapter-line" role="button" aria-expanded="false">
+            ${title} 
+            <span class="q-total-badge" style="font-weight: 700; color: #0a66c2; margin-left: 10px;">
+                (${chapterTotalCount} 문제)
+            </span>
+          </div>
           <div class="sections"></div>
         `;
 
@@ -188,7 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const secWrap = document.createElement('div');
                         secWrap.className = 'section';
                         
-                        // 🚨 문제 개수 계산 및 표시
+                        // Section별 문제 개수 계산
                         const numericalKey = `${chapterNum} | ${sec.numericalKey}`;
                         const qCount = questionBank[numericalKey] ? questionBank[numericalKey].length : 0;
                         
@@ -239,8 +260,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                     renderQuestions(questions, $questionsContainer);
                                     $questionsContainer.style.display = 'block';
                                 } else {
-                                    // 디버깅을 위해 에러 메시지에 찾으려는 키를 포함합니다.
-                                    console.log('Key not found:', numericalKey);
                                     $questionsContainer.innerHTML = `<div class="item-empty no-question">⚠️ 이 목차 (${numericalKey})에 매칭되는 문제가 없습니다.</div>`;
                                     $questionsContainer.style.display = 'block';
                                 }
