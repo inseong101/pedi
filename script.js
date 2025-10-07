@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const BASE = './chapter/';
+    // CHAPTERS 목록은 레포지토리의 파일명을 기반으로 합니다.
     const CHAPTERS = [
         "1장 서론.md", "2장 소아의 진단.md", "3장 성장과 발달.md",
         "4장 유전.md", "5장 소아의 영양.md", "6장 소아 양생(小兒 養生).md",
@@ -59,7 +60,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (line.startsWith('# ')) {
                 if (current) sections.push(current);
                 const rawTitle = line.replace(/^#\s*/, '');
-                const sectionTitle = normalizeText(rawTitle.replace(/^\d+절\s*/, ''));
+                // # 1절 소아과학의 개념" -> "소아과학의 개념" (Section 키 생성 로직은 유지)
+                const sectionTitle = normalizeText(rawTitle.replace(/^\d+절\s*/, '')); 
                 current = { 
                     rawTitle: rawTitle, 
                     normalizedTitle: sectionTitle,
@@ -137,12 +139,20 @@ document.addEventListener('DOMContentLoaded', () => {
         $target.appendChild(ul);
     }
     
-    // 장 블록 DOM 생성 (기존 코드 유지)
+    // 장 블록 DOM 생성
     function makeChapterRow(file) {
         const title = `제${file.replace(/\.md$/, '')}`;
         const li = document.createElement('li');
         
-        const normalizedChapter = normalizeText(file.replace(/^\d+장\s*/, '').replace('.md', ''));
+        // 🚨 핵심 수정: Chapter 이름에서 '숫자'와 '.md'만 제거하고 '장'을 남긴 후 정규화
+        // Python 코드의 키 생성 로직 (숫자+띄어쓰기만 제거)과 일치하도록 수정
+        const rawChapterName = file.replace(/^\d+장\s*/, '').replace('.md', '').trim();
+        
+        // 정규화된 챕터 이름 (키 매칭에 사용됨 - CSV의 분류1과 일치)
+        // file.replace(/^\d+장\s*/, '') -> '호흡기계의 병증 및 질환.md'
+        // .replace('.md', '').trim() -> '호흡기계의 병증 및 질환'
+        const normalizedChapter = normalizeText(rawChapterName);
+
 
         li.className = 'chapter';
         li.innerHTML = `
@@ -221,6 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 }
                                 
                                 // 2. 문제 데이터 로드 및 렌더링
+                                // 🚨 핵심 수정: normalizedChapter를 사용하여 정확한 키를 만듦
                                 const normalizedKey = `${normalizedChapter} | ${sec.normalizedTitle}`;
                                 const rawCsvKey = keyMapping[normalizedKey]; 
 
