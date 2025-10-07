@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const $sectionList = document.getElementById('section-list');
     const $itemList = document.getElementById('item-list');
     const $questionList = document.getElementById('question-list');
+    const $conceptContainer = document.getElementById('concept-container');
     const $globalTitle = document.getElementById('global-toc-title');
     const $metricChapters = document.getElementById('metric-chapters');
     const $metricSections = document.getElementById('metric-sections');
@@ -50,6 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const $sectionSummary = document.getElementById('section-summary');
     const $itemSummary = document.getElementById('item-summary');
     const $questionSummary = document.getElementById('question-summary');
+    const $conceptSummary = document.getElementById('concept-summary');
 
     const typeLabels = {
         chapter: '장 전체',
@@ -362,6 +364,11 @@ document.addEventListener('DOMContentLoaded', () => {
         container.appendChild(div);
     }
 
+    function resetConceptColumn(message = '항목을 선택하면 오른쪽 패널에 관련 개념이 표시됩니다.') {
+        showPlaceholder($conceptContainer, message, 'concept-empty');
+        setSummaryText($conceptSummary, message);
+    }
+
     function resetSectionColumn(message = '장을 선택하면 절이 표시됩니다.') {
         columnState.sectionButtons = [];
         columnState.sectionData = [];
@@ -376,9 +383,10 @@ document.addEventListener('DOMContentLoaded', () => {
         setSummaryText($itemSummary, message);
     }
 
-    function resetQuestionColumn(message = '항목을 선택하면 관련 문제가 아래에 나타납니다.') {
+    function resetQuestionColumn(message = '항목을 선택하면 왼쪽 패널에 관련 문제가 표시됩니다.') {
         showPlaceholder($questionList, message, 'question-empty');
         setSummaryText($questionSummary, message);
+        resetConceptColumn();
     }
 
     function renderSectionsForChapter(chapter, parsed) {
@@ -546,6 +554,9 @@ document.addEventListener('DOMContentLoaded', () => {
         setSummaryHTML($questionSummary, `<span class="question-label">${pathLabel}</span> <span class="summary-breakdown">${entry.breakdown.html}</span>`);
 
         renderQuestions(entry.questions, $questionList);
+
+        setSummaryHTML($conceptSummary, `<span class="question-label">${pathLabel}</span> <span class="concept-status">개념 자료 준비 중입니다.</span>`);
+        showPlaceholder($conceptContainer, '이 항목의 개념 자료가 준비 중입니다. JSON 파일이 추가되면 이 패널에서 확인할 수 있습니다.', 'concept-empty');
 
         if (options.scroll) {
             document.getElementById('question-column-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' });

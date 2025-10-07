@@ -75,13 +75,23 @@
         </section>
       </div>
 
-      <section class="question-panel" aria-labelledby="question-column-title">
-        <header class="column-header">
-          <h3 id="question-column-title">문제</h3>
-          <p id="question-summary" class="column-summary">항목을 선택하면 관련 문제가 아래에 나타납니다.</p>
-        </header>
-        <div id="question-list" class="questions-container" aria-live="polite"></div>
-      </section>
+      <div class="content-columns" aria-live="polite">
+        <section class="question-panel" aria-labelledby="question-column-title">
+          <header class="column-header">
+            <h3 id="question-column-title">문제</h3>
+            <p id="question-summary" class="column-summary">항목을 선택하면 왼쪽 패널에 관련 문제가 표시됩니다.</p>
+          </header>
+          <div id="question-list" class="questions-container" aria-live="polite"></div>
+        </section>
+
+        <section class="concept-panel" aria-labelledby="concept-column-title">
+          <header class="column-header">
+            <h3 id="concept-column-title">개념</h3>
+            <p id="concept-summary" class="column-summary">항목을 선택하면 오른쪽 패널에 관련 개념이 표시됩니다.</p>
+          </header>
+          <div id="concept-container" class="concept-container" aria-live="polite"></div>
+        </section>
+      </div>
     </section>
   </main>
 
