@@ -137,3 +137,93 @@ ul.items {
 
 /* --- (3) ‘내용 없음’ 대신 간격만 주는 스페이서 --- */
 .item-spacer { height: 10px; }
+
+
+\
+/* --- 문제 카드 스타일 --- */
+.questions-output {
+  margin-top: 10px;
+  padding-left: 16px; 
+  border-left: 2px solid rgba(0,0,0,.08);
+  display: none; /* 초기 숨김 */
+}
+.questions-container-list {
+  list-style: none; 
+  padding: 0; 
+  margin: 0;
+}
+.question-card {
+  background: #fff;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+.question-header {
+  font-weight: 700;
+  color: #0a66c2;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+.q-item-key {
+  font-weight: 400;
+  color: #666;
+  font-size: 13px;
+  margin-left: 8px;
+}
+.question-data {
+  margin-bottom: 10px;
+}
+.data-image {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid #eee;
+  border-radius: 4px;
+}
+.question-body {
+  margin-bottom: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.options-toggle {
+  display: inline-block;
+  padding: 4px 8px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #555;
+  cursor: pointer;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.options-toggle:hover {
+  background: #e5e5e5;
+}
+.question-options {
+  list-style: none;
+  padding: 8px 10px;
+  margin: 0;
+  background: #fcfcfc;
+  border: 1px dashed #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #333;
+  display: none; /* 초기 숨김 */
+}
+.question-options li {
+  margin-bottom: 4px;
+  padding: 2px 0;
+}
+/* 정답 선지 스타일 (사용자가 <span class="answer">...</span> 태그를 추가해야 적용됨) */
+.question-options li .answer,
+.question-options li b:has(span.answer) { 
+  color: red !important;
+  font-weight: 700;
+}
+/* Items가 더 이상 토글되지 않으므로 클릭 표시 제거 */
+ul.items li.item-line,
+ul.items li.item-line::after {
+    cursor: default !important;
+    font-weight: 400 !important;
+    content: none !important; 
+}
