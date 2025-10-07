@@ -227,3 +227,63 @@ ul.items li.item-line::after {
     font-weight: 400 !important;
     content: none !important; 
 }
+
+
+/* --- 문제 수 뱃지 스타일링 --- */
+
+/* 전체 문제 개수 영역 (글로벌, 챕터, 섹션) */
+.q-global-badge, .q-total-badge, .q-count-badge {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 10px;
+}
+
+/* 문제 개수 상세 영역 (Yearly breakdown wrapper) */
+.yearly-breakdown {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+}
+
+/* 총 문제 수 레이블 (예: (100 문제)) */
+.total-count-label {
+    font-weight: 700;
+    margin-right: 8px;
+    color: #333;
+}
+
+/* 연도별 칩 그룹 */
+.year-chips {
+    display: flex;
+    flex-wrap: wrap; /* 내용이 길어지면 줄바꿈 */
+    gap: 4px;
+}
+
+/* 개별 연도별 칩 (뱃지) */
+.year-chip {
+    display: inline-block;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #fff;
+    background-color: #0a66c2; /* 기본 색상: 파란색 */
+    transition: background-color 0.2s;
+}
+
+/* 0개인 연도 스타일 (0개여도 표시) */
+.year-chip.zero-count {
+    background-color: #cccccc; /* 회색 */
+    color: #555;
+    font-weight: 400;
+}
+
+/* Chapter 라인의 전체 뱃지 */
+.chapter-line .q-total-badge {
+    color: #111;
+    font-size: 14px;
+}
+/* Section 라인의 뱃지 */
+.section-line .q-count-badge {
+    font-size: 13px;
+}
