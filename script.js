@@ -44,7 +44,8 @@ function initDashboard() {
         activeYear: 'all',
         activeSectionIndex: null,
         activeItemIndex: null,
-        activeItemKey: null
+        activeItemKey: null,
+        showChapterQuestions: false
     };
 
     const openSectionsByChapter = new Map();
@@ -423,7 +424,11 @@ function initDashboard() {
                     const button = document.createElement('button');
                     button.type = 'button';
                     button.className = 'matrix-button';
-                    if (state.activeChapter === chapter.number && state.activeYear === yearKey) {
+                    if (
+                        state.activeChapter === chapter.number &&
+                        state.activeYear === yearKey &&
+                        state.showChapterQuestions
+                    ) {
                         button.classList.add('is-active');
                     }
                     button.dataset.chapter = chapter.number;
@@ -466,7 +471,7 @@ function initDashboard() {
         $matrixTable.appendChild(tbody);
 
         if ($matrixSummary) {
-            $matrixSummary.textContent = '장을 누르거나 연도 셀을 선택하면 문제가 아래에 표시됩니다.';
+            $matrixSummary.textContent = '장 제목을 누르면 절과 항목이 펼쳐집니다. 연도나 총합 셀을 선택하면 문제 목록이 표시됩니다.';
         }
     }
 
@@ -528,31 +533,36 @@ function initDashboard() {
         const chapterNumber = chapter.number;
         const chapterTitle = chapterDisplayTitle(chapter);
         const chapterQuestions = chapterYearIndex.get(`${chapterNumber}|all`) || [];
-        const filteredChapterQuestions = filterQuestionsByYear(chapterQuestions, state.activeYear);
 
         container.innerHTML = '';
 
-        const yearPanel = document.createElement('section');
-        yearPanel.className = 'chapter-year-panel';
+        if (state.showChapterQuestions) {
+            const yearKey = state.activeYear;
+            const filteredChapterQuestions = filterQuestionsByYear(chapterQuestions, yearKey);
+            const yearLabel = yearKey === 'all' ? '전체 문제' : `${yearKey}년 문제`;
+            const yearSummary = yearKey === 'all'
+                ? `${chapterTitle} · 총 ${formatNumber(filteredChapterQuestions.length)}문제`
+                : `${chapterTitle} · ${yearKey}년 ${formatNumber(filteredChapterQuestions.length)}문제`;
 
-        const yearHeader = document.createElement('header');
-        yearHeader.className = 'chapter-year-header';
-        const yearLabel = state.activeYear === 'all' ? '전체 문제' : `${state.activeYear}년 문제`;
-        const yearSummary = state.activeYear === 'all'
-            ? `${chapterTitle} · 총 ${formatNumber(filteredChapterQuestions.length)}문제`
-            : `${chapterTitle} · ${state.activeYear}년 ${formatNumber(filteredChapterQuestions.length)}문제`;
-        yearHeader.innerHTML = `
-            <h3 class="chapter-year-title">${yearLabel}</h3>
-            <p class="chapter-year-summary">${yearSummary}</p>
-        `;
-        yearPanel.appendChild(yearHeader);
+            const yearPanel = document.createElement('section');
+            yearPanel.className = 'chapter-year-panel';
 
-        const yearQuestionsContainer = document.createElement('div');
-        yearQuestionsContainer.className = 'chapter-year-questions';
-        renderQuestions(filteredChapterQuestions, yearQuestionsContainer);
-        yearPanel.appendChild(yearQuestionsContainer);
+            const yearHeader = document.createElement('header');
+            yearHeader.className = 'chapter-year-header';
+            yearHeader.innerHTML = `
+                <h3 class="chapter-year-title">${yearLabel}</h3>
+                <p class="chapter-year-summary">${yearSummary}</p>
+            `;
+            yearPanel.appendChild(yearHeader);
 
-        container.appendChild(yearPanel);
+            const yearQuestionsContainer = document.createElement('div');
+            yearQuestionsContainer.className = 'chapter-year-questions';
+            renderQuestions(filteredChapterQuestions, yearQuestionsContainer);
+            yearPanel.appendChild(yearQuestionsContainer);
+
+            container.appendChild(yearPanel);
+            return;
+        }
 
         const structure = chapterStructure.get(chapterNumber);
         const sectionWrap = document.createElement('div');
@@ -590,9 +600,10 @@ function initDashboard() {
             summary.className = 'chapter-section-summary';
             const sectionQuestions = chapterQuestions.filter(q => q.sectionNumber === section.numericalKey);
             const sectionCount = filterQuestionsByYear(sectionQuestions, state.activeYear).length;
+            const sectionCountClass = sectionCount > 0 ? 'section-count' : 'section-count is-zero';
             summary.innerHTML = `
                 <span class="section-title">${section.rawTitle}</span>
-                <span class="section-count">${formatNumber(sectionCount)}문제</span>
+                <span class="${sectionCountClass}">${formatNumber(sectionCount)}문제</span>
             `;
             details.appendChild(summary);
 
@@ -611,15 +622,22 @@ function initDashboard() {
                 section.items.forEach((item) => {
                     const questions = questionBank[item.numericalKey] || [];
                     const filteredCount = filterQuestionsByYear(questions, state.activeYear).length;
+                    const itemRow = document.createElement('div');
+                    itemRow.className = 'chapter-item-row';
+
                     const button = document.createElement('button');
                     button.type = 'button';
                     button.className = 'chapter-item-button';
-                    if (
+                    if (filteredCount === 0) {
+                        button.classList.add('is-zero');
+                    }
+                    const isActive = (
                         state.activeChapter === chapterNumber &&
                         state.activeSectionIndex === section.sectionIndex &&
                         state.activeItemIndex === item.itemIndex &&
                         state.activeItemKey === item.numericalKey
-                    ) {
+                    );
+                    if (isActive) {
                         button.classList.add('is-active');
                     }
                     button.dataset.chapter = chapterNumber;
@@ -633,18 +651,24 @@ function initDashboard() {
                     button.addEventListener('click', () => {
                         handleItemSelection(chapterNumber, section.sectionIndex, item.itemIndex, item.numericalKey);
                     });
-                    itemList.appendChild(button);
+                    itemRow.appendChild(button);
+
+                    const detailPanel = document.createElement('div');
+                    detailPanel.className = 'chapter-item-detail';
+                    detailPanel.dataset.itemKey = item.numericalKey;
+                    if (isActive) {
+                        detailPanel.classList.add('is-open');
+                        renderItemDetail(chapterNumber, section, item, detailPanel);
+                    } else {
+                        detailPanel.hidden = true;
+                    }
+                    itemRow.appendChild(detailPanel);
+
+                    itemList.appendChild(itemRow);
                 });
             }
 
             body.appendChild(itemList);
-
-            const detailPanel = document.createElement('div');
-            detailPanel.className = 'section-detail-panel';
-            detailPanel.dataset.sectionIndex = String(section.sectionIndex);
-            renderSectionDetail(chapterNumber, section, detailPanel);
-            body.appendChild(detailPanel);
-
             details.appendChild(body);
             sectionWrap.appendChild(details);
         });
@@ -652,60 +676,45 @@ function initDashboard() {
         container.appendChild(sectionWrap);
     }
 
-    function renderSectionDetail(chapterNumber, section, panel) {
-        panel.innerHTML = '';
+    function renderItemDetail(chapterNumber, section, itemEntry, container) {
+        container.innerHTML = '';
+        container.hidden = false;
 
-        if (
-            state.activeChapter !== chapterNumber ||
-            state.activeSectionIndex !== section.sectionIndex ||
-            !state.activeItemKey
-        ) {
-            const placeholder = document.createElement('div');
-            placeholder.className = 'detail-placeholder';
-            placeholder.textContent = '항목을 선택하면 문제가 표시됩니다.';
-            panel.appendChild(placeholder);
-            return;
-        }
-
-        const itemEntry = section.items.find(item => item.numericalKey === state.activeItemKey);
-        if (!itemEntry) {
-            const missing = document.createElement('div');
-            missing.className = 'detail-placeholder';
-            missing.textContent = '선택한 항목 정보를 찾을 수 없습니다.';
-            panel.appendChild(missing);
-            return;
-        }
-
-        const meta = itemMetadata.get(state.activeItemKey);
+        const meta = itemMetadata.get(itemEntry.numericalKey);
         const chapterInfo = CHAPTERS.find(ch => ch.number === chapterNumber) || { number: chapterNumber, title: '' };
         const pathLabel = meta
             ? `${meta.chapterTitle} → ${meta.sectionTitle} → ${meta.label}`
             : `${chapterDisplayTitle(chapterInfo)} → ${section.rawTitle} → ${itemEntry.label}`;
         const itemLabel = meta ? meta.label : itemEntry.label;
+        const yearTrail = state.activeYear === 'all' ? '' : ` · ${state.activeYear}년`;
 
         const header = document.createElement('header');
-        header.className = 'section-detail-header';
-        const yearTrail = state.activeYear === 'all' ? '' : ` · ${state.activeYear}년`;
+        header.className = 'item-detail-header';
         header.innerHTML = `
             <h4 class="detail-title">${itemLabel}</h4>
             <p class="detail-summary">${pathLabel}${yearTrail}</p>
         `;
-        panel.appendChild(header);
+        container.appendChild(header);
+
+        const detailGrid = document.createElement('div');
+        detailGrid.className = 'item-detail-grid';
 
         const questionWrap = document.createElement('div');
-        questionWrap.className = 'section-detail-questions';
-        const questions = filterQuestionsByYear(questionBank[state.activeItemKey] || [], state.activeYear).map((q) => ({
+        questionWrap.className = 'item-detail-questions';
+        const questions = filterQuestionsByYear(questionBank[itemEntry.numericalKey] || [], state.activeYear).map((q) => ({
             ...q,
             year: (q.id || '').split('-')[0] || '',
             itemLabel
         }));
         renderQuestions(questions, questionWrap);
-        panel.appendChild(questionWrap);
+        detailGrid.appendChild(questionWrap);
 
         const conceptWrap = document.createElement('div');
-        conceptWrap.className = 'section-detail-concept';
+        conceptWrap.className = 'item-detail-concept';
         conceptWrap.innerHTML = '<div class="concept-empty">이 항목의 개념 자료가 준비 중입니다.</div>';
-        panel.appendChild(conceptWrap);
+        detailGrid.appendChild(conceptWrap);
+
+        container.appendChild(detailGrid);
     }
 
     function scrollToChapterDetail(chapterNumber) {
@@ -741,7 +750,7 @@ function initDashboard() {
         await ensureChapterParsed(chapter);
 
         const isSame = state.activeChapter === chapterNumber;
-        const isDefaultView = state.activeYear === 'all' && state.activeItemKey === null;
+        const isDefaultView = state.activeYear === 'all' && state.activeItemKey === null && !state.showChapterQuestions;
 
         if (isSame && isDefaultView) {
             state.activeChapter = null;
@@ -749,6 +758,7 @@ function initDashboard() {
             state.activeSectionIndex = null;
             state.activeItemIndex = null;
             state.activeItemKey = null;
+            state.showChapterQuestions = false;
             renderMatrix();
             return;
         }
@@ -758,6 +768,7 @@ function initDashboard() {
         state.activeSectionIndex = null;
         state.activeItemIndex = null;
         state.activeItemKey = null;
+        state.showChapterQuestions = false;
 
         const openSet = ensureSectionOpenState(chapterNumber);
         if (!openSet.size) {
@@ -780,15 +791,34 @@ function initDashboard() {
 
         await ensureChapterParsed(chapter);
 
+        const alreadyOpen = (
+            state.activeChapter === chapterNumber &&
+            state.activeYear === yearKey &&
+            state.showChapterQuestions &&
+            state.activeItemKey === null
+        );
+
+        if (alreadyOpen) {
+            state.showChapterQuestions = false;
+            state.activeYear = 'all';
+            state.activeSectionIndex = null;
+            state.activeItemIndex = null;
+            state.activeItemKey = null;
+            renderMatrix();
+            return;
+        }
+
         const chapterChanged = state.activeChapter !== chapterNumber;
 
         state.activeChapter = chapterNumber;
         state.activeYear = yearKey;
+        state.showChapterQuestions = true;
+
+        state.activeSectionIndex = null;
+        state.activeItemIndex = null;
+        state.activeItemKey = null;
 
         if (chapterChanged) {
-            state.activeSectionIndex = null;
-            state.activeItemIndex = null;
-            state.activeItemKey = null;
 
             const openSet = ensureSectionOpenState(chapterNumber);
             if (!openSet.size) {
@@ -809,6 +839,7 @@ function initDashboard() {
     function handleItemSelection(chapterNumber, sectionIndex, itemIndex, itemKey) {
         state.activeChapter = chapterNumber;
         state.activeSectionIndex = sectionIndex;
+        state.showChapterQuestions = false;
 
         const isSame = state.activeItemKey === itemKey && state.activeItemIndex === itemIndex;
 
@@ -946,6 +977,7 @@ function initDashboard() {
 
         state.activeChapter = entry.chapterNum;
         state.activeYear = 'all';
+        state.showChapterQuestions = false;
 
         if (Number.isInteger(entry.sectionIndex)) {
             state.activeSectionIndex = entry.sectionIndex;
