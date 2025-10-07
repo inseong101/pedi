@@ -22,30 +22,14 @@ document.addEventListener('DOMContentLoaded', () => {
         return normalized.replace(/\s+/g, ' ');
     }
     
-    // 챕터별 총 문제 수를 계산하는 헬퍼 함수
-    function getChapterTotalCount(chapterNum, questionBank) {
-        let totalCount = 0;
-        const prefix = `${chapterNum} | `;
-        
-        // questionBank 키를 순회하며 해당 챕터 번호로 시작하는 키의 문제 수를 합산
-        for (const key in questionBank) {
-            if (key.startsWith(prefix)) {
-                totalCount += questionBank[key].length;
-            }
-        }
-        return totalCount;
-    }
-
-    // 데이터 로드: question_bank만 로드합니다.
+    // 데이터 로드
     async function loadData() {
         try {
             const qBankRes = await fetch('question_bank.json');
-            
             if (!qBankRes.ok) {
-                console.error("Failed to load question data (question_bank.json). Check network tab and file paths.");
+                console.error("Failed to load question data (question_bank.json). Check file path/network.");
                 return false;
             }
-            
             questionBank = await qBankRes.json();
             return true;
         } catch (e) {
@@ -54,7 +38,61 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 마크다운 파서: 섹션 번호만 추출합니다.
+    // 🚨 핵심 함수: 문제 배열을 받아 연도별 개수를 계산하고 HTML 문자열을 반환
+    function getYearlyBreakdown(questions) {
+        if (!questions || questions.length === 0) return { html: "(0 문제)", count: 0 };
+        
+        const counts = {};
+        let total = 0;
+        
+        // 연도별 카운트 계산
+        questions.forEach(q => {
+            const year = q.id.split('-')[0];
+            counts[year] = (counts[year] || 0) + 1;
+            total++;
+        });
+
+        // HTML 문자열 생성 (2021년 5개, 2022년 3개...)
+        const years = ["2021", "2022", "2023", "2024", "2025"];
+        const parts = [];
+        
+        years.forEach(year => {
+            if (counts[year]) {
+                parts.push(`${year}년 ${counts[year]}개`);
+            }
+        });
+
+        const html = `<span class="q-count-detail">(${total} 문제: ${parts.join(', ')})</span>`;
+        return { html, count: total };
+    }
+    
+    // Chapter Total Count 계산
+    function getChapterTotalBreakdown(chapterNum, questionBank) {
+        let allQuestions = [];
+        const prefix = `${chapterNum} | `;
+        
+        // 해당 Chapter 번호로 시작하는 모든 Section의 질문을 합산
+        for (const key in questionBank) {
+            if (key.startsWith(prefix)) {
+                allQuestions = allQuestions.concat(questionBank[key]);
+            }
+        }
+        return getYearlyBreakdown(allQuestions);
+    }
+    
+    // Global Total Count 계산
+    function getGlobalTotalBreakdown(questionBank) {
+        let allQuestions = [];
+        
+        // questionBank의 모든 질문을 합산
+        for (const key in questionBank) {
+            allQuestions = allQuestions.concat(questionBank[key]);
+        }
+        return getYearlyBreakdown(allQuestions);
+    }
+
+
+    // 마크다운 파서 (이전과 동일)
     function parseChapter(md) {
         const sections = [];
         let current = null;
@@ -67,8 +105,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (line.startsWith('# ')) {
                 if (current) sections.push(current);
                 const rawTitle = line.replace(/^#\s*/, '');
-                
-                // 섹션 번호만 추출합니다. (# 1절 -> 1)
                 const secMatch = rawTitle.match(/^(\d+)절\s*/);
                 const sectionNum = secMatch ? secMatch[1] : '0';
 
@@ -89,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return { sections };
     }
 
-    // 문제 표시 DOM 생성
+    // 문제 표시 DOM 생성 (이전과 동일)
     function renderQuestions(questions, $target) {
         if (questions.length === 0) {
              $target.innerHTML = `<div class="item-empty no-question">⚠️ 이 Section에 연결된 2021~2025년 기출 문제가 없습니다.</div>`;
@@ -154,20 +190,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const title = `제${file.replace(/\.md$/, '')}`;
         const li = document.createElement('li');
         
-        // Chapter 번호만 문자열로 추출 (예: '10')
         const chapMatch = file.match(/^(\d+)/);
         const chapterNum = chapMatch ? chapMatch[1] : '0';
         
-        // 🚨 Chapter 전체 문제 수 계산
-        const chapterTotalCount = getChapterTotalCount(chapterNum, questionBank);
+        // 🚨 1. Chapter 전체 문제 수 계산 및 HTML 생성
+        const chapterBreakdown = getChapterTotalBreakdown(chapterNum, questionBank);
 
 
         li.className = 'chapter';
         li.innerHTML = `
           <div class="chapter-line" role="button" aria-expanded="false">
             ${title} 
-            <span class="q-total-badge" style="font-weight: 700; color: #0a66c2; margin-left: 10px;">
-                (${chapterTotalCount} 문제)
+            <span class="q-total-badge" style="font-weight: 700; color: #111; margin-left: 10px;">
+                ${chapterBreakdown.html}
             </span>
           </div>
           <div class="sections"></div>
@@ -209,15 +244,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         const secWrap = document.createElement('div');
                         secWrap.className = 'section';
                         
-                        // Section별 문제 개수 계산
+                        // 🚨 2. Section별 문제 수 계산 및 HTML 생성
                         const numericalKey = `${chapterNum} | ${sec.numericalKey}`;
-                        const qCount = questionBank[numericalKey] ? questionBank[numericalKey].length : 0;
+                        const sectionQuestions = questionBank[numericalKey] || [];
+                        const sectionBreakdown = getYearlyBreakdown(sectionQuestions);
                         
                         secWrap.innerHTML = `
                           <div class="section-line" role="button" aria-expanded="false">
                             ${sec.rawTitle} 
                             <span class="q-count-badge" style="font-weight: 600; color: #0a66c2; margin-left: 10px;">
-                                (${qCount} 문제)
+                                ${sectionBreakdown.html}
                             </span>
                           </div>
                           <ul class="items"></ul>
@@ -260,6 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     renderQuestions(questions, $questionsContainer);
                                     $questionsContainer.style.display = 'block';
                                 } else {
+                                    console.log('Key not found:', numericalKey);
                                     $questionsContainer.innerHTML = `<div class="item-empty no-question">⚠️ 이 목차 (${numericalKey})에 매칭되는 문제가 없습니다.</div>`;
                                     $questionsContainer.style.display = 'block';
                                 }
@@ -284,7 +321,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // 메인 실행: 데이터 로드 후 목차 생성
     loadData().then(success => {
         const $list = document.getElementById('list');
+        const $globalTitle = document.getElementById('global-toc-title');
+        
         if (success) {
+            // 🚨 3. Global Total 계산 및 표시
+            const globalBreakdown = getGlobalTotalBreakdown(questionBank);
+            if ($globalTitle) {
+                 $globalTitle.innerHTML = `소아과학 목차 <span class="q-global-badge" style="font-size: 16px; font-weight: 500; margin-left: 10px;">${globalBreakdown.html}</span>`;
+            }
+
             CHAPTERS.forEach((file) => {
                 $list.appendChild(makeChapterRow(file));
             });
