@@ -21,6 +21,14 @@ document.addEventListener('DOMContentLoaded', () => {
         let normalized = text.replace(/\([^)]*\)/g, '').trim();
         return normalized.replace(/\s+/g, ' ');
     }
+
+    // 🚨 [오류 해결] Item 텍스트에서 [C, S, I] 번호를 추출하는 함수
+    function getNumericalParts(itemText) {
+        // C.S.I. 형태를 찾고 모든 숫자(parts)를 추출
+        const parts = itemText.match(/\d+/g); 
+        if (!parts || parts.length < 3) return ['0', '0', '0']; // 최소 C, S, I 3개 필요
+        return [parts[0], parts[1], parts[2]]; // C, S, I 번호 반환
+    }
     
     async function loadData() {
         try {
@@ -35,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 🚨 핵심 수정: 총합 뱃지를 연도 뱃지 뒤에 배치
+    // 🚨 문제 배열을 받아 연도별 개수를 계산하고 HTML 문자열을 반환
     function getYearlyBreakdown(questions) {
         const total = questions ? questions.length : 0;
         
@@ -55,7 +63,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const years = ["2021", "2022", "2023", "2024", "2025"];
         const yearChips = [];
         
-        // 연도별 칩 생성 (0개 포함)
         years.forEach(year => {
             const count = counts[year] || 0;
             const cssClass = count === 0 ? 'year-chip zero-count' : 'year-chip';
@@ -244,10 +251,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         const secWrap = document.createElement('div');
                         secWrap.className = 'section';
                         
-                        // Section별 문제 개수 계산 및 HTML 생성
-                        const numericalKeyBase = `${chapterNum} | ${sec.numericalKey}`;
-                        const sectionQuestions = []; // Item 클릭 전에는 0으로 표시 (Item level에서 계산)
-                        const sectionBreakdown = getYearlyBreakdown(sectionQuestions); // 0개로 초기화
+                        // Section별 문제 개수 계산 및 HTML 생성 (Item 합산용으로 0으로 초기화)
+                        const sectionQuestions = []; 
+                        const sectionBreakdown = getYearlyBreakdown(sectionQuestions); 
 
                         secWrap.innerHTML = `
                           <div class="section-line" role="button" aria-expanded="false">
@@ -295,7 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                             itemQuestionsTotal = itemQuestionsTotal.concat(itemQuestions);
 
                                             itemLi.innerHTML = `
-                                                <div class="item-title">${txt}<span class="q-count-badge" style="margin-left: 10px;">${itemBreakdown.html}</span></div>
+                                                <div class="item-title">${txt} <span class="q-count-badge" style="margin-left: 10px;">${itemBreakdown.html}</span></div>
                                                 <div class="item-content questions-output"></div>
                                             `;
 
