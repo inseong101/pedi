@@ -15,14 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const parsedCache = new Map();
     let questionBank = {};
+    const ALL_YEARS = ["2021", "2022", "2023", "2024", "2025"]; // 0개 포함을 위한 기준 연도
 
-    function normalizeText(text) {
-        if (!text) return "";
-        let normalized = text.replace(/\([^)]*\)/g, '').trim();
-        return normalized.replace(/\s+/g, ' ');
-    }
-
-    // 🚨 [오류 해결] Item 텍스트에서 [C, S, I] 번호를 추출하는 함수
+    // 🚨 Item 텍스트에서 [C, S, I] 번호를 추출하는 함수
     function getNumericalParts(itemText) {
         // C.S.I. 형태를 찾고 모든 숫자(parts)를 추출
         const parts = itemText.match(/\d+/g); 
@@ -47,23 +42,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function getYearlyBreakdown(questions) {
         const total = questions ? questions.length : 0;
         
-        if (total === 0) {
-            return { 
-                html: `<span class="yearly-breakdown"><span class="total-chip red-total-chip">0</span><span class="year-chips"></span></span>`, 
-                count: 0 
-            };
-        }
-        
         const counts = {};
         questions.forEach(q => {
             const year = q.id.split('-')[0];
             counts[year] = (counts[year] || 0) + 1;
         });
 
-        const years = ["2021", "2022", "2023", "2024", "2025"];
         const yearChips = [];
         
-        years.forEach(year => {
+        // 🚨 수정: 0 문제인 연도도 포함하여 뱃지 생성
+        ALL_YEARS.forEach(year => {
             const count = counts[year] || 0;
             const cssClass = count === 0 ? 'year-chip zero-count' : 'year-chip';
             yearChips.push(`<span class="${cssClass}" data-year="${year}">${year.slice(2)}:${count}</span>`);
@@ -133,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return { sections };
     }
 
-    // 문제 렌더링 (이전과 동일)
+    // 문제 렌더링 (보기 기본 펼침 유지)
     function renderQuestions(questions, $target) {
         if (questions.length === 0) {
              $target.innerHTML = `<div class="item-empty no-question">⚠️ 이 항목에 연결된 문제가 없습니다.</div>`;
@@ -251,9 +239,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         const secWrap = document.createElement('div');
                         secWrap.className = 'section';
                         
-                        // Section별 문제 개수 계산 및 HTML 생성 (Item 합산용으로 0으로 초기화)
+                        // Section별 문제 개수 계산 (Item 합산용으로 0으로 초기화)
                         const sectionQuestions = []; 
-                        const sectionBreakdown = getYearlyBreakdown(sectionQuestions); 
+                        const sectionBreakdown = getYearlyBreakdown(sectionQuestions); // 0개로 초기화
 
                         secWrap.innerHTML = `
                           <div class="section-line" role="button" aria-expanded="false">
@@ -301,7 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                             itemQuestionsTotal = itemQuestionsTotal.concat(itemQuestions);
 
                                             itemLi.innerHTML = `
-                                                <div class="item-title">${txt} <span class="q-count-badge" style="margin-left: 10px;">${itemBreakdown.html}</span></div>
+                                                <div class="item-title">${txt} <span class="q-count-badge">${itemBreakdown.html}</span></div>
                                                 <div class="item-content questions-output"></div>
                                             `;
 
