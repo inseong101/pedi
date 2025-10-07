@@ -37,6 +37,7 @@ function initDashboard() {
     const chapterYearIndex = new Map();
     const chapterStats = new Map();
     const searchIndex = [];
+    const openChapters = new Set();
     let years = [];
 
     const state = {
@@ -62,12 +63,22 @@ function initDashboard() {
     const $searchResults = document.getElementById('search-results');
     const $searchList = document.getElementById('search-list');
 
+    const htmlBuffer = document.createElement('div');
+
     function formatNumber(num) {
         return Number(num || 0).toLocaleString('ko-KR');
     }
 
     function coalesce(value, fallback) {
         return value === undefined || value === null ? fallback : value;
+    }
+
+    function stripHtml(html) {
+        if (!html) return '';
+        htmlBuffer.innerHTML = html;
+        const text = htmlBuffer.textContent || '';
+        htmlBuffer.textContent = '';
+        return text;
     }
 
     function chapterDisplayTitle(chapter) {
@@ -282,9 +293,20 @@ function initDashboard() {
             const chapterInfo = CHAPTERS.find(ch => ch.number === chapterNum) || { number: chapterNum, title: '' };
             const chapterTitle = chapterDisplayTitle(chapterInfo);
 
-            entries.forEach(question => {
+            entries.forEach((question, index) => {
                 const year = (question.id || '').split('-')[0] || '기타';
                 yearSet.add(year);
+
+                const optionsPlain = stripHtml(question.options_html || '');
+                const conceptPlain = stripHtml(question.concept_html || '');
+                const searchPieces = [
+                    question.question_text,
+                    question.answer_text,
+                    question.explanation,
+                    question.concept_text,
+                    optionsPlain,
+                    conceptPlain
+                ].filter(Boolean);
 
                 const augmented = {
                     ...question,
@@ -295,8 +317,13 @@ function initDashboard() {
                     itemNumber: itemNum,
                     itemLabel: meta ? meta.label : (question.item_key || ''),
                     numericalKey,
-                    year
+                    year,
+                    optionsPlain,
+                    conceptPlain,
+                    searchContent: searchPieces.join(' ')
                 };
+
+                entries[index] = augmented;
 
                 pushToIndex(`${chapterNum}|${year}`, augmented);
                 pushToIndex(`${chapterNum}|all`, augmented);
@@ -406,6 +433,9 @@ function initDashboard() {
             const labelButton = document.createElement('button');
             labelButton.type = 'button';
             labelButton.className = 'matrix-row-toggle';
+            if (openChapters.has(chapter.number)) {
+                labelButton.classList.add('is-open');
+            }
             if (state.activeChapter === chapter.number) {
                 labelButton.classList.add('is-active');
             }
@@ -447,7 +477,7 @@ function initDashboard() {
 
             tbody.appendChild(row);
 
-            if (state.activeChapter === chapter.number) {
+            if (openChapters.has(chapter.number)) {
                 const detailRow = document.createElement('tr');
                 detailRow.className = 'matrix-detail-row';
                 detailRow.dataset.chapter = chapter.number;
@@ -471,7 +501,7 @@ function initDashboard() {
         $matrixTable.appendChild(tbody);
 
         if ($matrixSummary) {
-            $matrixSummary.textContent = '장 제목을 누르면 절과 항목이 펼쳐집니다. 연도나 총합 셀을 선택하면 문제 목록이 표시됩니다.';
+            $matrixSummary.textContent = '장 제목을 누르면 절과 항목을 동시에 여러 개 펼칠 수 있습니다. 연도나 총합 셀을 선택하면 해당 문제 목록이 표시됩니다.';
         }
     }
 
@@ -501,26 +531,38 @@ function initDashboard() {
                 </div>
                 ${q.data_1 ? `<div class="question-data"><img src="${q.data_1}" alt="문제 자료" class="data-image"></div>` : ''}
                 <div class="question-body">${q.question_text || ''}</div>
-                <div class="options-toggle" role="button" aria-expanded="true">
-                    <span class="options-text">보기/정답 닫기</span>
-                </div>
-                <ul class="question-options" style="display: block;">${q.options_html || ''}</ul>
+                <button type="button" class="options-toggle" aria-pressed="false">
+                    <span class="options-text">정답 보기</span>
+                </button>
+                <ul class="question-options">${q.options_html || ''}</ul>
             `;
 
             const toggle = li.querySelector('.options-toggle');
             const optionsList = li.querySelector('.question-options');
+
+            if (optionsList) {
+                const answerMarkers = Array.from(optionsList.querySelectorAll('span.answer'));
+                answerMarkers.forEach((marker) => {
+                    const option = marker.closest('li');
+                    if (option) {
+                        option.dataset.correct = 'true';
+                        if (!option.querySelector('.answer-badge')) {
+                            const badge = document.createElement('span');
+                            badge.className = 'answer-badge';
+                            badge.textContent = '정답';
+                            badge.setAttribute('aria-hidden', 'true');
+                            option.appendChild(badge);
+                        }
+                    }
+                    marker.remove();
+                });
+            }
+
             toggle.addEventListener('click', (event) => {
                 event.stopPropagation();
-                const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
-                if (isExpanded) {
-                    optionsList.style.display = 'none';
-                    toggle.setAttribute('aria-expanded', 'false');
-                    toggle.querySelector('.options-text').textContent = '보기/정답 보기 (+ 정답)';
-                } else {
-                    optionsList.style.display = 'block';
-                    toggle.setAttribute('aria-expanded', 'true');
-                    toggle.querySelector('.options-text').textContent = '보기/정답 닫기';
-                }
+                const show = li.classList.toggle('show-answer');
+                toggle.setAttribute('aria-pressed', show ? 'true' : 'false');
+                toggle.querySelector('.options-text').textContent = show ? '정답 숨기기' : '정답 보기';
             });
 
             ul.appendChild(li);
@@ -536,7 +578,7 @@ function initDashboard() {
 
         container.innerHTML = '';
 
-        if (state.showChapterQuestions) {
+        if (state.showChapterQuestions && state.activeChapter === chapterNumber) {
             const yearKey = state.activeYear;
             const filteredChapterQuestions = filterQuestionsByYear(chapterQuestions, yearKey);
             const yearLabel = yearKey === 'all' ? '전체 문제' : `${yearKey}년 문제`;
@@ -578,9 +620,6 @@ function initDashboard() {
         }
 
         const openSet = ensureSectionOpenState(chapterNumber);
-        if (!openSet.size) {
-            openSet.add(structure.sections[0].sectionIndex);
-        }
 
         structure.sections.forEach((section) => {
             const details = document.createElement('details');
@@ -703,8 +742,7 @@ function initDashboard() {
         questionWrap.className = 'item-detail-questions';
         const questions = filterQuestionsByYear(questionBank[itemEntry.numericalKey] || [], state.activeYear).map((q) => ({
             ...q,
-            year: (q.id || '').split('-')[0] || '',
-            itemLabel
+            itemLabel: q.itemLabel || itemLabel
         }));
         renderQuestions(questions, questionWrap);
         detailGrid.appendChild(questionWrap);
@@ -749,19 +787,23 @@ function initDashboard() {
 
         await ensureChapterParsed(chapter);
 
-        const isSame = state.activeChapter === chapterNumber;
-        const isDefaultView = state.activeYear === 'all' && state.activeItemKey === null && !state.showChapterQuestions;
+        if (openChapters.has(chapterNumber)) {
+            openChapters.delete(chapterNumber);
 
-        if (isSame && isDefaultView) {
-            state.activeChapter = null;
-            state.activeYear = 'all';
-            state.activeSectionIndex = null;
-            state.activeItemIndex = null;
-            state.activeItemKey = null;
-            state.showChapterQuestions = false;
+            if (state.activeChapter === chapterNumber) {
+                state.activeChapter = null;
+                state.activeYear = 'all';
+                state.activeSectionIndex = null;
+                state.activeItemIndex = null;
+                state.activeItemKey = null;
+                state.showChapterQuestions = false;
+            }
+
             renderMatrix();
             return;
         }
+
+        openChapters.add(chapterNumber);
 
         state.activeChapter = chapterNumber;
         state.activeYear = 'all';
@@ -769,14 +811,6 @@ function initDashboard() {
         state.activeItemIndex = null;
         state.activeItemKey = null;
         state.showChapterQuestions = false;
-
-        const openSet = ensureSectionOpenState(chapterNumber);
-        if (!openSet.size) {
-            const structure = chapterStructure.get(chapterNumber);
-            if (structure && structure.sections.length) {
-                openSet.add(structure.sections[0].sectionIndex);
-            }
-        }
 
         renderMatrix();
 
@@ -807,9 +841,7 @@ function initDashboard() {
             renderMatrix();
             return;
         }
-
-        const chapterChanged = state.activeChapter !== chapterNumber;
-
+        openChapters.add(chapterNumber);
         state.activeChapter = chapterNumber;
         state.activeYear = yearKey;
         state.showChapterQuestions = true;
@@ -817,17 +849,6 @@ function initDashboard() {
         state.activeSectionIndex = null;
         state.activeItemIndex = null;
         state.activeItemKey = null;
-
-        if (chapterChanged) {
-
-            const openSet = ensureSectionOpenState(chapterNumber);
-            if (!openSet.size) {
-                const structure = chapterStructure.get(chapterNumber);
-                if (structure && structure.sections.length) {
-                    openSet.add(structure.sections[0].sectionIndex);
-                }
-            }
-        }
 
         renderMatrix();
 
@@ -837,6 +858,7 @@ function initDashboard() {
     }
 
     function handleItemSelection(chapterNumber, sectionIndex, itemIndex, itemKey) {
+        openChapters.add(chapterNumber);
         state.activeChapter = chapterNumber;
         state.activeSectionIndex = sectionIndex;
         state.showChapterQuestions = false;
@@ -867,6 +889,11 @@ function initDashboard() {
                 const sectionQuestions = (chapterYearIndex.get(`${chapter.number}|all`) || [])
                     .filter(q => q.sectionNumber === section.numericalKey);
 
+                const sectionSearchPieces = [chapterTitle, section.rawTitle];
+                sectionQuestions.forEach((q) => {
+                    if (q.searchContent) sectionSearchPieces.push(q.searchContent);
+                });
+
                 const sectionEntry = {
                     type: 'section',
                     chapterNum: chapter.number,
@@ -874,7 +901,7 @@ function initDashboard() {
                     sectionTitle: section.rawTitle,
                     itemTitle: '',
                     questionCount: sectionQuestions.length,
-                    searchText: `${chapterTitle} ${section.rawTitle}`.toLowerCase(),
+                    searchText: sectionSearchPieces.join(' ').toLowerCase(),
                     sectionIndex: section.sectionIndex,
                     itemIndex: null
                 };
@@ -883,6 +910,10 @@ function initDashboard() {
 
                 section.items.forEach((item) => {
                     const questions = questionBank[item.numericalKey] || [];
+                    const itemSearchPieces = [chapterTitle, section.rawTitle, item.label];
+                    questions.forEach((q) => {
+                        if (q.searchContent) itemSearchPieces.push(q.searchContent);
+                    });
                     const entry = {
                         type: 'item',
                         chapterNum: chapter.number,
@@ -890,7 +921,7 @@ function initDashboard() {
                         sectionTitle: section.rawTitle,
                         itemTitle: item.label,
                         questionCount: questions.length,
-                        searchText: `${chapterTitle} ${section.rawTitle} ${item.label}`.toLowerCase(),
+                        searchText: itemSearchPieces.join(' ').toLowerCase(),
                         sectionIndex: section.sectionIndex,
                         itemIndex: item.itemIndex,
                         numericalKey: item.numericalKey
@@ -975,6 +1006,7 @@ function initDashboard() {
 
         await ensureChapterParsed(chapter);
 
+        openChapters.add(entry.chapterNum);
         state.activeChapter = entry.chapterNum;
         state.activeYear = 'all';
         state.showChapterQuestions = false;
@@ -1069,11 +1101,6 @@ function initDashboard() {
 
         updateHeroMetrics(computeGlobalStats());
         renderMatrix();
-
-        const defaultChapter = CHAPTERS[0];
-        if (defaultChapter) {
-            await handleChapterLabelClick(defaultChapter.number, { scrollToDetail: false });
-        }
     });
 }
 
