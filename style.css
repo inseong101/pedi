@@ -1,289 +1,185 @@
 body {
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, 'Noto Sans KR', Arial, sans-serif;
-  margin: 0;
-  background: #fafafa;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, 'Noto Sans KR', Arial, sans-serif;
+    margin: 0;
+    background: #fafafa;
 }
 .wrap { max-width: 900px; margin: 48px auto; padding: 0 20px; }
 h1 { margin: 0 0 16px; font-size: 24px; }
 
 /* 상단 바 */
 .topbar {
-  position: sticky; top: 0; background: #fff;
-  border-bottom: 1px solid rgba(0,0,0,.06);
-  padding: 10px 20px;
+    position: sticky; top: 0; background: #fff;
+    border-bottom: 1px solid rgba(0,0,0,.06);
+    padding: 10px 20px;
 }
 .topbar a {
-  text-decoration: none; color: #0a66c2; font-weight: 700;
+    text-decoration: none; color: #0a66c2; font-weight: 700;
 }
 
 /* 기본 리스트 */
 ul { list-style: none; padding: 0; margin: 16px 0; }
 li { margin-bottom: 8px; }
 
-/* 공통 토글 블록 (장, 절) */
-.chapter-line, .section-line {
-  display: block;
-  padding: 10px 12px;
-  border: 1px solid rgba(0,0,0,.12);
-  border-radius: 10px;
-  background: #fff;
-  cursor: pointer;
-  position: relative;
+/* --- 1. 정렬: 제목과 뱃지 컨테이너를 양 끝으로 분리 (가장 중요) --- */
+.chapter-line, .section-line, .item-line {
+    display: flex;
+    justify-content: space-between; /* 제목과 뱃지 컨테이너를 양 끝으로 밀어냄 */
+    align-items: center;
+    
+    padding: 10px 12px;
+    border: 1px solid rgba(0,0,0,.12);
+    border-radius: 10px;
+    background: #fff;
+    cursor: pointer;
+    position: relative;
+    padding-right: 36px; /* ← ± 아이콘 자리 확보 */
 }
-.chapter-line:hover, .section-line:hover { background: #f7f9ff; }
+.chapter-line:hover, .section-line:hover, .item-line:hover { background: #f7f9ff; }
 
-/* + / − 아이콘 */
-.chapter-line::after, .section-line::after {
-  content: "+";
-  position: absolute;
-  right: 12px; top: 50%;
-  transform: translateY(-50%);
-  font-weight: 900;
-  color: rgba(0,0,0,.55);
-}
-.chapter-line[aria-expanded="true"]::after,
-.section-line[aria-expanded="true"]::after {
-  content: "−";
-}
-
-/* 들여쓰기 및 계층 스타일 */
-.sections { margin-left: 20px; display: none; }
-.sections.visible { display: block; }
-
-.items { margin-left: 20px; display: none; }
-.items.visible { display: block; }
-
+/* TOC 제목 폰트 스타일 */
 .chapter-line { font-size: 16px; font-weight: 700; color: #111; }
 .section-line { font-size: 15px; font-weight: 600; color: #333; }
+.item-line .item-title { font-weight: 500; font-size: 14px; color: #222; }
 
-/* --- 하위 항목(1., 2., …) 박스 버튼 --- */
-ul.items {
-  list-style: none;
-  margin: 8px 0 0 16px;
-  padding: 0;
-  border-left: 2px solid rgba(0,0,0,.08);
-}
 
-.item-line {
-  display: block;
-  margin: 6px 0;
-  padding: 8px 10px;
-  background: #fff;
-  border: 1px solid rgba(0,0,0,.12);
-  border-radius: 8px;
-  font-size: 14px;
-  color: #222;
-  cursor: pointer;
-  transition: background .15s ease;
+/* --- 2. ± 아이콘 (절/장 토글) --- */
+.chapter-line::after, .section-line::after, .item-line::after {
+    content: "+";
+    position: absolute;
+    right: 12px; top: 50%;
+    transform: translateY(-50%);
+    font-weight: 900;
+    color: rgba(0,0,0,.55);
+    pointer-events: none; /* 아이콘 위 클릭도 토글되게 */
+    font-size: 18px;
 }
-.item-line:hover { background: #eef6ff; }
-
-/* 하위가 비어도 ‘펼쳐졌다’는 느낌만 주는 얇은 여백/빈 박스 */
-.item-empty {
-  display: block;
-  margin: 6px 0;
-  padding: 8px 10px;
-  background: #fafafa;
-  border: 1px dashed rgba(0,0,0,.15);
-  border-radius: 8px;
-  color: #666;
-  font-size: 13px;
-}
-
-/* + / − 아이콘이 텍스트와 겹치지 않게 우측 여백 확보 */
-.chapter-line,
-.section-line {
-  padding-right: 36px;     /* ← 아이콘 자리 */
-}
-
-/* 아이콘 클릭 충돌 방지(클릭 이벤트는 카드에 전달) */
-.chapter-line::after,
-.section-line::after {
-  pointer-events: none;
-  font-size: 18px;         /* 보기 쉽게 살짝 키움 (선택) */
-}
-
-/* 섹션을 펼쳤는데 항목이 하나도 없을 때 '살짝 간격'만 주는 스페이서 */
-.item-spacer {
-  height: 10px;
-}
-
-/* --- (1) item(1., 2., …)에도 + / − 아이콘 표시 --- */
-.item-line {
-  position: relative;
-  padding-right: 36px;       /* 아이콘 자리 */
-}
-.item-line::after {
-  content: "+";
-  position: absolute;
-  right: 12px; top: 50%;
-  transform: translateY(-50%);
-  font-weight: 900;
-  color: rgba(0,0,0,.55);
-  pointer-events: none;       /* 아이콘 위 클릭도 토글되게 */
-}
+.chapter-line[aria-expanded="true"]::after,
+.section-line[aria-expanded="true"]::after,
 .item-line[aria-expanded="true"]::after {
-  content: "−";
+    content: "−";
 }
-
-/* --- (2) 항목 토글 본문 영역 표시/숨김 --- */
-.item-content { 
-  display: none; 
-  margin-top: 6px;
+/* Item은 클릭 시 ± 아이콘을 사용하도록 함 */
+ul.items {
+    list-style: none;
+    margin: 8px 0 0 16px;
+    padding: 0;
+    border-left: 2px solid rgba(0,0,0,.08);
 }
-.item-content.visible { 
-  display: block; 
-}
-
-/* --- (3) ‘내용 없음’ 대신 간격만 주는 스페이서 --- */
-.item-spacer { height: 10px; }
-
-
-\
-/* --- 문제 카드 스타일 --- */
-.questions-output {
-  margin-top: 10px;
-  padding-left: 16px; 
-  border-left: 2px solid rgba(0,0,0,.08);
-  display: none; /* 초기 숨김 */
-}
-.questions-container-list {
-  list-style: none; 
-  padding: 0; 
-  margin: 0;
-}
-.question-card {
-  background: #fff;
-  border: 1px solid #d0d0d0;
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 12px;
-}
-.question-header {
-  font-weight: 700;
-  color: #0a66c2;
-  margin-bottom: 8px;
-  font-size: 14px;
-}
-.q-item-key {
-  font-weight: 400;
-  color: #666;
-  font-size: 13px;
-  margin-left: 8px;
-}
-.question-data {
-  margin-bottom: 10px;
-}
-.data-image {
-  max-width: 100%;
-  height: auto;
-  border: 1px solid #eee;
-  border-radius: 4px;
-}
-.question-body {
-  margin-bottom: 10px;
-  font-size: 14px;
-  line-height: 1.5;
-}
-.options-toggle {
-  display: inline-block;
-  padding: 4px 8px;
-  background: #f0f0f0;
-  border-radius: 4px;
-  font-size: 13px;
-  color: #555;
-  cursor: pointer;
-  margin-bottom: 8px;
-  font-weight: 600;
-}
-.options-toggle:hover {
-  background: #e5e5e5;
-}
-.question-options {
-  list-style: none;
-  padding: 8px 10px;
-  margin: 0;
-  background: #fcfcfc;
-  border: 1px dashed #ccc;
-  border-radius: 4px;
-  font-size: 13px;
-  color: #333;
-  display: none; /* 초기 숨김 */
-}
-.question-options li {
-  margin-bottom: 4px;
-  padding: 2px 0;
-}
-/* 정답 선지 스타일 (사용자가 <span class="answer">...</span> 태그를 추가해야 적용됨) */
-.question-options li .answer,
-.question-options li b:has(span.answer) { 
-  color: red !important;
-  font-weight: 700;
-}
-/* Items가 더 이상 토글되지 않으므로 클릭 표시 제거 */
-ul.items li.item-line,
-ul.items li.item-line::after {
-    cursor: default !important;
-    font-weight: 400 !important;
-    content: none !important; 
+.item-line {
+    margin: 6px 0;
+    padding: 8px 10px;
+    border-radius: 8px;
+    transition: background .15s ease;
 }
 
 
-/* --- 문제 수 뱃지 스타일링 --- */
+/* --- 3. 문제 수 뱃지 디자인 (핵심) --- */
 
-/* 전체 문제 개수 영역 (글로벌, 챕터, 섹션) */
+/* 문제 개수 전체 영역 (글로벌, 챕터, 섹션, 아이템) */
 .q-global-badge, .q-total-badge, .q-count-badge {
+    /* Flexbox 정렬에 의해 자동으로 오른쪽 끝에 붙음 */
     display: inline-flex;
     align-items: center;
-    margin-left: 10px;
+    flex-shrink: 0; /* 제목이 길어져도 뱃지가 축소되지 않도록 함 */
 }
 
-/* 문제 개수 상세 영역 (Yearly breakdown wrapper) */
+/* 연도별 상세 영역 (Yearly breakdown wrapper) */
 .yearly-breakdown {
     display: flex;
     align-items: center;
-    font-size: 12px;
-}
-
-/* 총 문제 수 레이블 (예: (100 문제)) */
-.total-count-label {
-    font-weight: 700;
-    margin-right: 8px;
-    color: #333;
+    gap: 4px; /* 칩 그룹과 총합 칩 사이 간격 */
+    font-size: 11px; 
 }
 
 /* 연도별 칩 그룹 */
 .year-chips {
     display: flex;
-    flex-wrap: wrap; /* 내용이 길어지면 줄바꿈 */
-    gap: 4px;
+    gap: 3px; /* 연도 칩끼리의 간격 */
 }
 
 /* 개별 연도별 칩 (뱃지) */
 .year-chip {
     display: inline-block;
-    padding: 2px 5px;
-    border-radius: 4px;
-    font-size: 11px;
+    padding: 2px 4px;
+    border-radius: 3px;
     font-weight: 500;
     color: #fff;
-    background-color: #0a66c2; /* 기본 색상: 파란색 */
-    transition: background-color 0.2s;
+    background-color: #0a66c2; /* 파란색 */
 }
 
-/* 0개인 연도 스타일 (0개여도 표시) */
+/* 0개인 연도 스타일 */
 .year-chip.zero-count {
     background-color: #cccccc; /* 회색 */
     color: #555;
     font-weight: 400;
 }
 
-/* Chapter 라인의 전체 뱃지 */
-.chapter-line .q-total-badge {
-    color: #111;
-    font-size: 14px;
+/* New: 총 문제 수 칩 (빨간색 뱃지) */
+.total-chip.red-total-chip {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px; 
+    font-weight: 700;
+    color: #fff;
+    background-color: #e74c3c; /* 붉은색 */
 }
-/* Section 라인의 뱃지 */
-.section-line .q-count-badge {
+
+/* --- 4. 기타 스타일 및 문제 카드 --- */
+
+/* 들여쓰기 및 계층 스타일 */
+.sections { margin-left: 20px; display: none; }
+.sections.visible { display: block; }
+.items { margin-left: 20px; display: none; }
+.items.visible { display: block; }
+
+/* 토글 본문 영역 */
+.item-content { display: none; margin-top: 6px; }
+.item-content.visible { display: block; }
+.item-spacer { height: 10px; }
+.item-empty {
+    display: block;
+    margin: 6px 0;
+    padding: 8px 10px;
+    background: #fafafa;
+    border: 1px dashed rgba(0,0,0,.15);
+    border-radius: 8px;
+    color: #666;
     font-size: 13px;
+}
+
+/* 문제 카드 스타일 (이전과 동일) */
+.questions-output {
+    margin-top: 10px;
+    padding-left: 16px; 
+    border-left: 2px solid rgba(0,0,0,.08);
+}
+.questions-container-list { list-style: none; padding: 0; margin: 0; }
+.question-card {
+    background: #fff;
+    border: 1px solid #d0d0d0;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+}
+.question-header { font-weight: 700; color: #0a66c2; margin-bottom: 8px; font-size: 14px; }
+.q-item-key { font-weight: 400; color: #666; font-size: 13px; margin-left: 8px; }
+.question-data { margin-bottom: 10px; }
+.data-image { max-width: 100%; height: auto; border: 1px solid #eee; border-radius: 4px; }
+.question-body { margin-bottom: 10px; font-size: 14px; line-height: 1.5; }
+.options-toggle {
+    display: inline-block; padding: 4px 8px; background: #f0f0f0; border-radius: 4px;
+    font-size: 13px; color: #555; cursor: pointer; margin-bottom: 8px; font-weight: 600;
+}
+.options-toggle:hover { background: #e5e5e5; }
+.question-options {
+    list-style: none; padding: 8px 10px; margin: 0; background: #fcfcfc;
+    border: 1px dashed #ccc; border-radius: 4px; font-size: 13px; color: #333;
+}
+.question-options li { margin-bottom: 4px; padding: 2px 0; }
+/* 정답 선지 스타일: 빨간색 볼드 */
+.question-options li .answer,
+.question-options li b:has(span.answer) { 
+    color: red !important;
+    font-weight: 700 !important;
 }
