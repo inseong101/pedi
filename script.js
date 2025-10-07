@@ -1,48 +1,80 @@
 function initDashboard() {
-    const ASSET_VERSION = '20241007';
-    const CHAPTER_BASE = './chapter/';
-    const CONCEPT_BASE = './concept/';
-    const CHAPTERS = [
-        { number: '1', title: '서론', file: '1장 서론.md' },
-        { number: '2', title: '소아의 진단', file: '2장 소아의 진단.md' },
-        { number: '3', title: '성장과 발달', file: '3장 성장과 발달.md' },
-        { number: '4', title: '유전', file: null },
-        { number: '5', title: '소아의 영양', file: '5장 소아의 영양.md' },
-        { number: '6', title: '소아 양생(小兒 養生)', file: '6장 소아 양생(小兒 養生).md' },
-        { number: '7', title: '소아 치료법', file: null },
-        { number: '8', title: '신생아 및 초생병', file: '8장 신생아 및 초생병.md' },
-        { number: '9', title: '감염병', file: '9장 감염병.md' },
-        { number: '10', title: '호흡기계의 병증 및 질환', file: '10장 호흡기계의 병증 및 질환.md' },
-        { number: '11', title: '소화기계의 병증 및 질환', file: '11장 소화기계의 병증 및 질환.md' },
-        { number: '12', title: '신경계의 병증 및 질환', file: '12장 신경계의 병증 및 질환.md' },
-        { number: '13', title: '소아청소년기 정신장애', file: '13장 소아청소년기 정신장애.md' },
-        { number: '14', title: '심혈관계 병증 및 질환', file: '14장 심혈관계 병증 및 질환.md' },
-        { number: '15', title: '간담계의 병증 및 질환', file: '15장 간담계의 병증 및 질환.md' },
-        { number: '16', title: '비뇨생식기계의 병증 및 질환', file: '16장 비뇨생식기계의 병증 및 질환.md' },
-        { number: '17', title: '알레르기 질환', file: '17장 알레르기 질환.md' },
-        { number: '18', title: '면역질환', file: '18장 면역질환.md' },
-        { number: '19', title: '근·골격계 질환', file: '19장 근·골격계 질환.md' },
-        { number: '20', title: '내분비질환', file: '20장 내분비질환.md' },
-        { number: '21', title: '종양', file: '21장 종양.md' },
-        { number: '22', title: '피부질환', file: '22장 피부질환.md' },
-        { number: '23', title: '안질환', file: '23장 안질환.md' },
-        { number: '24', title: '증후', file: '24장 증후.md' },
-        { number: '25', title: '급증(손상)', file: null },
-        { number: '26', title: '소아의료윤리', file: null }
+    const ASSET_VERSION = '20241008';
+    const DEFAULT_SUBJECT_ID = 'pedi';
+    const SUBJECTS = [
+        {
+            id: 'pedi',
+            name: '소아과학',
+            heroEyebrow: 'Pedi board review 2021-2025',
+            heroDescription: '기출 5개년 데이터를 기반으로 장·절·항목별 개념과 문제 출제 현황을 한눈에 정리했습니다.',
+            chapterBase: './chapter/pedi/',
+            conceptBase: './concept/pedi/',
+            mediaBase: './media/pedi/',
+            chapters: [
+                { number: '1', title: '서론', file: '1장 서론.md' },
+                { number: '2', title: '소아의 진단', file: '2장 소아의 진단.md' },
+                { number: '3', title: '성장과 발달', file: '3장 성장과 발달.md' },
+                { number: '4', title: '유전', file: null },
+                { number: '5', title: '소아의 영양', file: '5장 소아의 영양.md' },
+                { number: '6', title: '소아 양생(小兒 養生)', file: '6장 소아 양생(小兒 養生).md' },
+                { number: '7', title: '소아 치료법', file: null },
+                { number: '8', title: '신생아 및 초생병', file: '8장 신생아 및 초생병.md' },
+                { number: '9', title: '감염병', file: '9장 감염병.md' },
+                { number: '10', title: '호흡기계의 병증 및 질환', file: '10장 호흡기계의 병증 및 질환.md' },
+                { number: '11', title: '소화기계의 병증 및 질환', file: '11장 소화기계의 병증 및 질환.md' },
+                { number: '12', title: '신경계의 병증 및 질환', file: '12장 신경계의 병증 및 질환.md' },
+                { number: '13', title: '소아청소년기 정신장애', file: '13장 소아청소년기 정신장애.md' },
+                { number: '14', title: '심혈관계 병증 및 질환', file: '14장 심혈관계 병증 및 질환.md' },
+                { number: '15', title: '간담계의 병증 및 질환', file: '15장 간담계의 병증 및 질환.md' },
+                { number: '16', title: '비뇨생식기계의 병증 및 질환', file: '16장 비뇨생식기계의 병증 및 질환.md' },
+                { number: '17', title: '알레르기 질환', file: '17장 알레르기 질환.md' },
+                { number: '18', title: '면역질환', file: '18장 면역질환.md' },
+                { number: '19', title: '근·골격계 질환', file: '19장 근·골격계 질환.md' },
+                { number: '20', title: '내분비질환', file: '20장 내분비질환.md' },
+                { number: '21', title: '종양', file: '21장 종양.md' },
+                { number: '22', title: '피부질환', file: '22장 피부질환.md' },
+                { number: '23', title: '안질환', file: '23장 안질환.md' },
+                { number: '24', title: '증후', file: '24장 증후.md' },
+                { number: '25', title: '급증(손상)', file: null },
+                { number: '26', title: '소아의료윤리', file: null }
+            ]
+        },
+        {
+            id: 'hanbang',
+            name: '한방생리학',
+            heroEyebrow: 'Oriental physiology focus 2021-2025',
+            heroDescription: '장부생리와 음양오행 이론을 중심으로 핵심 개념과 기출을 정리했습니다.',
+            chapterBase: './chapter/hanbang/',
+            conceptBase: './concept/hanbang/',
+            mediaBase: './media/hanbang/',
+            chapters: [
+                { number: '1', title: '장부론', file: '1장 장부론.md' },
+                { number: '2', title: '음양오행', file: '2장 음양오행.md' },
+                { number: '3', title: '영혈순환', file: '3장 영혈순환.md' }
+            ]
+        }
     ];
 
+    let currentSubject = null;
+    let CHAPTER_BASE = '';
+    let CONCEPT_BASE = '';
+    let MEDIA_BASE = '';
+    let CHAPTERS = [];
+
     let questionBank = {};
-    const parsedCache = new Map();
-    const chapterStructure = new Map();
-    const itemMetadata = new Map();
-    const chapterYearIndex = new Map();
-    const chapterStats = new Map();
-    const conceptCache = new Map();
-    const searchIndex = [];
-    const openChapters = new Set();
+    let parsedCache = new Map();
+    let chapterStructure = new Map();
+    let itemMetadata = new Map();
+    let chapterYearIndex = new Map();
+    let chapterStats = new Map();
+    let conceptCache = new Map();
+    let searchIndex = [];
     let years = [];
+    let yearMaxCounts = {};
+    let openChapters = new Set();
 
     const state = {
+        subjectId: DEFAULT_SUBJECT_ID,
         activeChapter: null,
         activeYear: 'all',
         activeSectionIndex: null,
@@ -51,7 +83,7 @@ function initDashboard() {
         showChapterQuestions: false
     };
 
-    const openSectionsByChapter = new Map();
+    let openSectionsByChapter = new Map();
 
     const $matrixTable = document.getElementById('chapter-matrix');
     const $matrixSummary = document.getElementById('matrix-summary');
@@ -60,12 +92,126 @@ function initDashboard() {
     const $metricItems = document.getElementById('metric-items');
     const $metricQuestions = document.getElementById('metric-questions');
     const $globalTitle = document.getElementById('global-toc-title');
+    const $heroEyebrow = document.getElementById('hero-eyebrow');
+    const $heroDesc = document.getElementById('hero-desc');
+    const $subjectSwitcher = document.getElementById('subject-switcher');
     const $searchInput = document.getElementById('search-input');
     const $searchSummary = document.getElementById('search-summary');
     const $searchResults = document.getElementById('search-results');
     const $searchList = document.getElementById('search-list');
 
     const htmlBuffer = document.createElement('div');
+
+    let rawQuestionBanks = null;
+    let rawKeyMappings = null;
+    const processedQuestionBankCache = new Map();
+
+    function getSubjectById(id) {
+        return SUBJECTS.find((subject) => subject.id === id) || null;
+    }
+
+    function updateHeroSubjectInfo(subject) {
+        if (!subject) return;
+        if ($heroEyebrow) {
+            $heroEyebrow.textContent = subject.heroEyebrow;
+        }
+        if ($globalTitle) {
+            $globalTitle.textContent = `${subject.name} 목차`;
+        }
+        if ($heroDesc) {
+            $heroDesc.textContent = subject.heroDescription;
+        }
+    }
+
+    function updateSubjectToggleUI() {
+        if (!$subjectSwitcher) return;
+        const buttons = $subjectSwitcher.querySelectorAll('[data-subject]');
+        buttons.forEach((button) => {
+            const isActive = button.getAttribute('data-subject') === state.subjectId;
+            button.classList.toggle('is-active', isActive);
+            button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
+    }
+
+    function getDefaultSearchSummary() {
+        const subject = currentSubject || getSubjectById(state.subjectId);
+        const subjectLabel = subject ? subject.name : '과목';
+        return `${subjectLabel} 범위에서 장·절·항목과 문제를 검색할 수 있습니다.`;
+    }
+
+    function resetSearchUI() {
+        if ($searchResults) {
+            $searchResults.hidden = true;
+        }
+        if ($searchList) {
+            $searchList.innerHTML = '';
+        }
+        if ($searchSummary) {
+            $searchSummary.textContent = getDefaultSearchSummary();
+        }
+        if ($searchInput) {
+            $searchInput.value = '';
+        }
+    }
+
+    function applyMatrixHeat(button, count, yearKey) {
+        if (!button) return;
+        if (button.classList.contains('is-active')) {
+            button.style.background = '';
+            button.style.color = '';
+            button.style.boxShadow = '';
+            button.removeAttribute('data-intensity');
+            button.classList.remove('has-heat');
+            return;
+        }
+
+        const max = yearKey === 'all' ? (yearMaxCounts.total || 0) : (yearMaxCounts[yearKey] || 0);
+        if (!max) {
+            button.style.background = '';
+            button.style.color = '';
+            button.style.boxShadow = '';
+            button.removeAttribute('data-intensity');
+            button.classList.remove('has-heat');
+            return;
+        }
+
+        const ratio = Math.min(1, Math.max(0, count / max));
+        const eased = Math.pow(ratio, 0.75);
+        const hue = 199;
+        const highlight = isRecentYear(yearKey) ? 1 : 0;
+        const saturation = highlight ? 94 : 86;
+        const minLightness = highlight ? 84 : 88;
+        const maxLightness = highlight ? 30 : 36;
+        const lightness = minLightness - (minLightness - maxLightness) * eased;
+        button.style.background = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+        button.style.color = eased >= 0.45 ? 'var(--accent-on-dark)' : 'var(--text-primary)';
+        const shadowLightness = Math.max(24, lightness - 12 - highlight * 4);
+        const shadowOpacity = 0.35 + 0.3 * eased + highlight * 0.08;
+        button.style.boxShadow = `inset 0 0 0 1px hsla(${hue}, ${saturation + 4}%, ${shadowLightness}%, ${shadowOpacity.toFixed(3)})`;
+        button.dataset.intensity = ratio.toFixed(3);
+        button.classList.toggle('has-heat', ratio > 0);
+    }
+
+    function isRecentYear(yearKey) {
+        const numeric = Number(yearKey);
+        return Number.isFinite(numeric) && numeric >= 2021 && numeric <= 2025;
+    }
+
+    function resolveQuestionMedia(question) {
+        if (!question || !question.data_1) return null;
+        const raw = String(question.data_1).trim();
+        if (!raw) return null;
+        if (/^(https?:|data:|\/)/i.test(raw) || raw.startsWith('./')) {
+            return raw;
+        }
+        const hasExtension = /\.[a-zA-Z0-9]{2,4}$/.test(raw);
+        const fileName = hasExtension ? raw : `${raw}.png`;
+        const encoded = fileName
+            .split('/')
+            .map((segment) => encodeURIComponent(segment))
+            .join('/');
+        return MEDIA_BASE ? `${MEDIA_BASE}${encoded}` : encoded;
+    }
 
     function formatNumber(num) {
         return Number(num || 0).toLocaleString('ko-KR');
@@ -398,18 +544,50 @@ function initDashboard() {
         }
     }
 
-    async function loadData() {
+    async function ensureQuestionBanksLoaded() {
+        if (rawQuestionBanks) {
+            return rawQuestionBanks;
+        }
         try {
-            const response = await fetch(`question_bank.json?v=${ASSET_VERSION}`); 
+            const response = await fetch(`question_bank.json?v=${ASSET_VERSION}`);
             if (!response.ok) {
-                return false;
+                throw new Error(`status ${response.status}`);
             }
-            questionBank = await response.json();
-            return true;
+            rawQuestionBanks = await response.json();
         } catch (error) {
             console.error('question_bank.json 로드 실패', error);
-            return false;
+            rawQuestionBanks = null;
         }
+        return rawQuestionBanks;
+    }
+
+    async function ensureKeyMappingsLoaded() {
+        if (rawKeyMappings) {
+            return rawKeyMappings;
+        }
+        try {
+            const response = await fetch(`key_mapping.json?v=${ASSET_VERSION}`);
+            if (!response.ok) {
+                throw new Error(`status ${response.status}`);
+            }
+            rawKeyMappings = await response.json();
+        } catch (error) {
+            console.error('key_mapping.json 로드 실패', error);
+            rawKeyMappings = null;
+        }
+        return rawKeyMappings;
+    }
+
+    function getProcessedQuestionBank(subjectId) {
+        if (processedQuestionBankCache.has(subjectId)) {
+            return processedQuestionBankCache.get(subjectId);
+        }
+        const source = rawQuestionBanks && rawQuestionBanks[subjectId]
+            ? rawQuestionBanks[subjectId]
+            : {};
+        const clone = JSON.parse(JSON.stringify(source));
+        processedQuestionBankCache.set(subjectId, clone);
+        return clone;
     }
 
     function parseChapter(md) {
@@ -660,6 +838,16 @@ function initDashboard() {
             }
             chapterStats.set(chapter.number, stats);
         });
+
+        yearMaxCounts = years.reduce((acc, year) => ({ ...acc, [year]: 0 }), { total: 0 });
+        CHAPTERS.forEach((chapter) => {
+            const stats = chapterStats.get(chapter.number);
+            if (!stats) return;
+            yearMaxCounts.total = Math.max(yearMaxCounts.total, stats.total || 0);
+            years.forEach((year) => {
+                yearMaxCounts[year] = Math.max(yearMaxCounts[year], stats.perYear[year] || 0);
+            });
+        });
     }
 
     function computeGlobalStats() {
@@ -691,6 +879,59 @@ function initDashboard() {
         if ($metricQuestions) $metricQuestions.textContent = formatNumber(metrics.questions);
     }
 
+    async function activateSubject(subjectId) {
+        const subject = getSubjectById(subjectId) || SUBJECTS[0];
+        if (!subject) return;
+
+        const questionPayload = await ensureQuestionBanksLoaded();
+        await ensureKeyMappingsLoaded();
+
+        if (!questionPayload) {
+            if ($matrixSummary) {
+                $matrixSummary.textContent = '문제 데이터를 불러오지 못했습니다. question_bank.json 경로를 확인해주세요.';
+            }
+            return;
+        }
+
+        currentSubject = subject;
+        state.subjectId = subject.id;
+        CHAPTER_BASE = subject.chapterBase;
+        CONCEPT_BASE = subject.conceptBase;
+        const rawMediaBase = subject.mediaBase || '';
+        MEDIA_BASE = rawMediaBase ? (rawMediaBase.endsWith('/') ? rawMediaBase : `${rawMediaBase}/`) : '';
+        CHAPTERS = subject.chapters;
+
+        questionBank = getProcessedQuestionBank(subject.id);
+        parsedCache = new Map();
+        chapterStructure = new Map();
+        itemMetadata = new Map();
+        chapterYearIndex = new Map();
+        chapterStats = new Map();
+        conceptCache = new Map();
+        searchIndex = [];
+        years = [];
+        yearMaxCounts = {};
+        openChapters = new Set();
+        openSectionsByChapter = new Map();
+
+        state.activeChapter = null;
+        state.activeYear = 'all';
+        state.activeSectionIndex = null;
+        state.activeItemIndex = null;
+        state.activeItemKey = null;
+        state.showChapterQuestions = false;
+
+        updateSubjectToggleUI();
+        updateHeroSubjectInfo(subject);
+        resetSearchUI();
+
+        await preloadAllChapters();
+        computeYearsAndIndex();
+        buildSearchIndex();
+        updateHeroMetrics(computeGlobalStats());
+        renderMatrix();
+    }
+
     function getChapterStats(chapterNumber) {
         return chapterStats.get(chapterNumber) || { perYear: {}, total: 0, sections: 0, items: 0 };
     }
@@ -720,7 +961,11 @@ function initDashboard() {
             const th = document.createElement('th');
             th.scope = 'col';
             th.className = 'matrix-heading';
-            th.textContent = column === 'total' ? '총합' : `${column}년`;
+            const isTotal = column === 'total';
+            if (!isTotal && isRecentYear(column)) {
+                th.classList.add('is-recent-year');
+            }
+            th.textContent = isTotal ? '총합' : `${column}년`;
             headerRow.appendChild(th);
         });
 
@@ -753,14 +998,22 @@ function initDashboard() {
 
             columns.forEach((column) => {
                 const cell = document.createElement('td');
+                cell.className = 'matrix-data-cell';
                 const isTotal = column === 'total';
                 const yearKey = isTotal ? 'all' : column;
+                cell.dataset.year = yearKey;
+                if (!isTotal && isRecentYear(column)) {
+                    cell.classList.add('is-recent-year');
+                }
                 const count = isTotal ? stats.total : coalesce(stats.perYear[column], 0);
 
                 if (count > 0) {
                     const button = document.createElement('button');
                     button.type = 'button';
                     button.className = 'matrix-button';
+                    if (!isTotal && isRecentYear(column)) {
+                        button.classList.add('is-recent-year');
+                    }
                     if (
                         state.activeChapter === chapter.number &&
                         state.activeYear === yearKey &&
@@ -771,12 +1024,14 @@ function initDashboard() {
                     button.dataset.chapter = chapter.number;
                     button.dataset.year = yearKey;
                     button.textContent = formatNumber(count);
+                    applyMatrixHeat(button, count, yearKey);
                     cell.appendChild(button);
                 } else {
                     const span = document.createElement('span');
                     span.className = 'matrix-value is-zero';
                     span.textContent = '0';
                     cell.appendChild(span);
+                    cell.classList.add('is-zero');
                 }
 
                 row.appendChild(cell);
@@ -808,7 +1063,8 @@ function initDashboard() {
         $matrixTable.appendChild(tbody);
 
         if ($matrixSummary) {
-            $matrixSummary.textContent = '장 제목을 누르면 절과 항목을 동시에 여러 개 펼칠 수 있습니다. 연도나 총합 셀을 선택하면 해당 문제 목록이 표시됩니다.';
+            const subjectLabel = currentSubject ? currentSubject.name : '각';
+            $matrixSummary.textContent = `${subjectLabel} 장 제목을 누르면 절과 항목을 동시에 여러 개 펼칠 수 있습니다. 연도(2021~2025 강조)나 총합 셀을 선택하면 해당 문제 목록이 표시됩니다.`;
         }
     }
 
@@ -830,13 +1086,14 @@ function initDashboard() {
             const year = q.year || (q.id ? q.id.split('-')[0] : '');
             const number = q.id ? q.id.split('-')[1] : '';
             const itemTitle = q.itemLabel || q.item_key || '';
+            const mediaUrl = resolveQuestionMedia(q);
 
             li.innerHTML = `
                 <div class="question-header">
                     <span class="q-year">${year ? `${year}년` : ''} ${number ? `${number}번` : ''}</span>
                     <span class="q-item-key">${itemTitle}</span>
                 </div>
-                ${q.data_1 ? `<div class="question-data"><img src="${q.data_1}" alt="문제 자료" class="data-image"></div>` : ''}
+                ${mediaUrl ? `<figure class="question-data"><img src="${mediaUrl}" alt="문제 자료" class="data-image" loading="lazy"></figure>` : ''}
                 <div class="question-body">${q.question_text || ''}</div>
                 <button type="button" class="options-toggle" aria-pressed="false">
                     <span class="options-text">정답 보기</span>
@@ -846,6 +1103,23 @@ function initDashboard() {
 
             const toggle = li.querySelector('.options-toggle');
             const optionsList = li.querySelector('.question-options');
+            const mediaImg = li.querySelector('.data-image');
+
+            if (mediaImg) {
+                mediaImg.addEventListener('error', () => {
+                    if (!mediaImg.isConnected) return;
+                    const fallback = document.createElement('div');
+                    fallback.className = 'media-fallback';
+                    fallback.innerHTML = `📁 <span>이미지 파일을 <code>${MEDIA_BASE}</code> 경로에 추가해주세요.</span>`;
+                    const figure = mediaImg.closest('figure.question-data');
+                    if (figure) {
+                        figure.innerHTML = '';
+                        figure.appendChild(fallback);
+                    } else {
+                        mediaImg.replaceWith(fallback);
+                    }
+                }, { once: true });
+            }
 
             if (optionsList) {
                 const answerMarkers = Array.from(optionsList.querySelectorAll('span.answer'));
@@ -1246,7 +1520,7 @@ function initDashboard() {
         if (!query) {
             $searchResults.hidden = true;
             $searchList.innerHTML = '';
-            $searchSummary.textContent = '검색어를 입력하면 관련 장·절·항목과 문제 수가 정리되어 표시됩니다.';
+            $searchSummary.textContent = getDefaultSearchSummary();
             return;
         }
 
@@ -1390,24 +1664,30 @@ function initDashboard() {
         });
     }
 
-    loadData().then(async (success) => {
-        if (!success) {
+    if ($subjectSwitcher) {
+        $subjectSwitcher.addEventListener('click', (event) => {
+            const target = event.target instanceof HTMLElement
+                ? event.target.closest('[data-subject]')
+                : null;
+            if (!target) return;
+            const subjectId = target.getAttribute('data-subject');
+            if (subjectId && subjectId !== state.subjectId) {
+                void activateSubject(subjectId);
+            }
+        });
+    }
+
+    resetSearchUI();
+
+    Promise.all([ensureQuestionBanksLoaded(), ensureKeyMappingsLoaded()]).then(async ([questionPayload]) => {
+        if (!questionPayload) {
             if ($matrixSummary) {
                 $matrixSummary.textContent = '문제 데이터를 불러오지 못했습니다. question_bank.json 경로를 확인해주세요.';
             }
             return;
         }
 
-        await preloadAllChapters();
-        computeYearsAndIndex();
-        buildSearchIndex();
-
-        if ($globalTitle) {
-            $globalTitle.textContent = '소아과학 목차';
-        }
-
-        updateHeroMetrics(computeGlobalStats());
-        renderMatrix();
+        await activateSubject(DEFAULT_SUBJECT_ID);
     });
 }
 
