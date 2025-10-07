@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>소아과학 목차</title>
   <!-- 외부 CSS 불러오기 -->
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=20241007" />
 </head>
 <body>
   <div class="topbar">
@@ -54,48 +54,20 @@
     </section>
 
     <section class="toc-section" aria-labelledby="global-toc-title">
-      <h2 class="toc-heading">장별 목차</h2>
-      <div id="chapter-grid" class="chapter-grid" aria-live="polite"></div>
+      <header class="toc-heading-row">
+        <h2 class="toc-heading">장별 목차</h2>
+      </header>
 
-      <div class="toc-columns" aria-live="polite">
-        <section class="toc-column" aria-labelledby="section-column-title">
-          <header class="column-header">
-            <h3 id="section-column-title">절</h3>
-            <p id="section-summary" class="column-summary">장을 선택하면 절이 표시됩니다.</p>
-          </header>
-          <div id="section-list" class="toc-list" role="list"></div>
-        </section>
-
-        <section class="toc-column" aria-labelledby="item-column-title">
-          <header class="column-header">
-            <h3 id="item-column-title">항목</h3>
-            <p id="item-summary" class="column-summary">절을 선택하면 항목이 표시됩니다.</p>
-          </header>
-          <div id="item-list" class="toc-list" role="list"></div>
-        </section>
+      <div class="matrix-wrap" aria-live="polite">
+        <table id="chapter-matrix" class="chapter-matrix" role="grid">
+          <caption class="visually-hidden">장별 출제 현황 매트릭스</caption>
+        </table>
       </div>
-
-      <div class="content-columns" aria-live="polite">
-        <section class="question-panel" aria-labelledby="question-column-title">
-          <header class="column-header">
-            <h3 id="question-column-title">문제</h3>
-            <p id="question-summary" class="column-summary">항목을 선택하면 왼쪽 패널에 관련 문제가 표시됩니다.</p>
-          </header>
-          <div id="question-list" class="questions-container" aria-live="polite"></div>
-        </section>
-
-        <section class="concept-panel" aria-labelledby="concept-column-title">
-          <header class="column-header">
-            <h3 id="concept-column-title">개념</h3>
-            <p id="concept-summary" class="column-summary">항목을 선택하면 오른쪽 패널에 관련 개념이 표시됩니다.</p>
-          </header>
-          <div id="concept-container" class="concept-container" aria-live="polite"></div>
-        </section>
-      </div>
+      <p id="matrix-summary" class="matrix-summary">장 목록을 불러오는 중입니다.</p>
     </section>
   </main>
 
   <!-- 외부 JS 불러오기 -->
-  <script src="script.js"></script>
+  <script src="script.js?v=20241007"></script>
 </body>
 </html>
