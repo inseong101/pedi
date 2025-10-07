@@ -15,18 +15,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const parsedCache = new Map();
     let questionBank = {};
-    // keyMapping은 더 이상 사용하지 않습니다.
 
-    // 텍스트 정규화: 괄호 및 내용 제거, 공백 정리
     function normalizeText(text) {
         if (!text) return "";
         let normalized = text.replace(/\([^)]*\)/g, '').trim();
         return normalized.replace(/\s+/g, ' ');
     }
     
-    // 데이터 로드: key_mapping은 제외하고 question_bank만 로드합니다.
+    // 데이터 로드: question_bank만 로드합니다.
     async function loadData() {
         try {
+            // question_bank.json 파일은 최상위 경로에 있다고 가정합니다.
             const qBankRes = await fetch('question_bank.json');
             
             if (!qBankRes.ok) {
@@ -62,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 current = { 
                     rawTitle: rawTitle, 
-                    numericalKey: sectionNum, // 숫자만 문자열로 저장
+                    numericalKey: sectionNum, 
                     items: [] 
                 };
             } else if (line.startsWith('- ')) {
@@ -105,26 +104,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 <div class="question-body">${q.question_text}</div>
 
-                <div class="options-toggle" role="button" aria-expanded="false">
-                    <span class="options-text">보기/정답 보기 (+ 정답)</span>
+                <div class="options-toggle" role="button" aria-expanded="true">
+                    <span class="options-text">보기/정답 닫기</span>
                 </div>
                 
-                <ul class="question-options">
+                <ul class="question-options" style="display: block;">
                     ${q.options_html}
                 </ul>
             `;
             
             const $toggle = li.querySelector('.options-toggle');
+            const $optionsUl = li.querySelector('.question-options');
+
             $toggle.addEventListener('click', () => {
-                const optionsUl = li.querySelector('.question-options');
                 const isExpanded = $toggle.getAttribute('aria-expanded') === 'true';
                 
                 if (isExpanded) {
-                    optionsUl.style.display = 'none';
+                    $optionsUl.style.display = 'none';
                     $toggle.setAttribute('aria-expanded', 'false');
                     $toggle.querySelector('.options-text').textContent = '보기/정답 보기 (+ 정답)';
                 } else {
-                    optionsUl.style.display = 'block';
+                    $optionsUl.style.display = 'block';
                     $toggle.setAttribute('aria-expanded', 'true');
                     $toggle.querySelector('.options-text').textContent = '보기/정답 닫기';
                 }
@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const title = `제${file.replace(/\.md$/, '')}`;
         const li = document.createElement('li');
         
-        // 챕터 번호만 문자열로 추출 (예: '10')
+        // Chapter 번호만 문자열로 추출 (예: '10')
         const chapMatch = file.match(/^(\d+)/);
         const chapterNum = chapMatch ? chapMatch[1] : '0';
 
@@ -187,8 +187,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     sections.forEach((sec) => {
                         const secWrap = document.createElement('div');
                         secWrap.className = 'section';
+                        
+                        // 🚨 문제 개수 계산 및 표시
+                        const numericalKey = `${chapterNum} | ${sec.numericalKey}`;
+                        const qCount = questionBank[numericalKey] ? questionBank[numericalKey].length : 0;
+                        
                         secWrap.innerHTML = `
-                          <div class="section-line" role="button" aria-expanded="false">${sec.rawTitle}</div>
+                          <div class="section-line" role="button" aria-expanded="false">
+                            ${sec.rawTitle} 
+                            <span class="q-count-badge" style="font-weight: 600; color: #0a66c2; margin-left: 10px;">
+                                (${qCount} 문제)
+                            </span>
+                          </div>
                           <ul class="items"></ul>
                           <div class="questions-output"></div>
                         `;
@@ -223,10 +233,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                 }
                                 
                                 // 2. 문제 데이터 로드 및 렌더링
-                                // 최종 키: "Chapter Num | Section Num"
-                                const numericalKey = `${chapterNum} | ${sec.numericalKey}`;
-                                
-                                // questionBank에서 직접 키를 찾습니다.
                                 if (questionBank[numericalKey]) {
                                     const questions = questionBank[numericalKey];
                                     $questionsContainer.innerHTML = ''; 
