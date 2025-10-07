@@ -20,7 +20,7 @@ h1 { margin: 0 0 16px; font-size: 24px; }
 ul { list-style: none; padding: 0; margin: 16px 0; }
 li { margin-bottom: 8px; }
 
-/* --- 1. 정렬: 제목과 뱃지 컨테이너를 양 끝으로 분리 (가장 중요) --- */
+/* --- 1. 정렬: 제목과 뱃지 컨테이너를 양 끝으로 분리 (일관된 탭 정렬) --- */
 .chapter-line, .section-line, .item-line {
     display: flex;
     justify-content: space-between; /* 제목과 뱃지 컨테이너를 양 끝으로 밀어냄 */
@@ -40,9 +40,14 @@ li { margin-bottom: 8px; }
 .chapter-line { font-size: 16px; font-weight: 700; color: #111; }
 .section-line { font-size: 15px; font-weight: 600; color: #333; }
 .item-line .item-title { font-weight: 500; font-size: 14px; color: #222; }
+/* 제목과 뱃지 사이의 공백이 좁아지지 않도록 제목 컨테이너에 max-width 지정 */
+.chapter-line .toc-title, .section-line .toc-title, .item-line .item-title {
+    max-width: calc(100% - 140px); /* 뱃지 공간 확보 */
+    margin-right: 10px;
+}
 
 
-/* --- 2. ± 아이콘 (절/장 토글) --- */
+/* --- 2. ± 아이콘 (절/장/항목 토글) --- */
 .chapter-line::after, .section-line::after, .item-line::after {
     content: "+";
     position: absolute;
@@ -50,7 +55,7 @@ li { margin-bottom: 8px; }
     transform: translateY(-50%);
     font-weight: 900;
     color: rgba(0,0,0,.55);
-    pointer-events: none; /* 아이콘 위 클릭도 토글되게 */
+    pointer-events: none;
     font-size: 18px;
 }
 .chapter-line[aria-expanded="true"]::after,
@@ -58,7 +63,12 @@ li { margin-bottom: 8px; }
 .item-line[aria-expanded="true"]::after {
     content: "−";
 }
-/* Item은 클릭 시 ± 아이콘을 사용하도록 함 */
+
+/* 들여쓰기 및 계층 스타일 */
+.sections { margin-left: 20px; display: none; }
+.sections.visible { display: block; }
+.items { margin-left: 20px; display: none; }
+.items.visible { display: block; }
 ul.items {
     list-style: none;
     margin: 8px 0 0 16px;
@@ -71,30 +81,36 @@ ul.items {
     border-radius: 8px;
     transition: background .15s ease;
 }
+.item-content { display: none; margin-top: 6px; }
+.item-content.visible { display: block; }
+.item-spacer { height: 10px; }
+.item-empty {
+    display: block; margin: 6px 0; padding: 8px 10px; background: #fafafa;
+    border: 1px dashed rgba(0,0,0,.15); border-radius: 8px; color: #666; font-size: 13px;
+}
 
 
 /* --- 3. 문제 수 뱃지 디자인 (핵심) --- */
 
-/* 문제 개수 전체 영역 (글로벌, 챕터, 섹션, 아이템) */
+/* 문제 개수 전체 영역 (Global, Chapter, Section, Item) */
 .q-global-badge, .q-total-badge, .q-count-badge {
-    /* Flexbox 정렬에 의해 자동으로 오른쪽 끝에 붙음 */
     display: inline-flex;
     align-items: center;
-    flex-shrink: 0; /* 제목이 길어져도 뱃지가 축소되지 않도록 함 */
+    flex-shrink: 0; 
 }
 
 /* 연도별 상세 영역 (Yearly breakdown wrapper) */
 .yearly-breakdown {
     display: flex;
     align-items: center;
-    gap: 4px; /* 칩 그룹과 총합 칩 사이 간격 */
-    font-size: 11px; 
+    gap: 3px; 
+    font-size: 11px; /* 연도 뱃지 폰트 크기 */
 }
 
 /* 연도별 칩 그룹 */
 .year-chips {
     display: flex;
-    gap: 3px; /* 연도 칩끼리의 간격 */
+    gap: 3px; 
 }
 
 /* 개별 연도별 칩 (뱃지) */
@@ -114,7 +130,7 @@ ul.items {
     font-weight: 400;
 }
 
-/* New: 총 문제 수 칩 (빨간색 뱃지) */
+/* 총 문제 수 칩 (빨간색 뱃지) */
 .total-chip.red-total-chip {
     display: inline-block;
     padding: 2px 6px;
@@ -123,44 +139,17 @@ ul.items {
     font-weight: 700;
     color: #fff;
     background-color: #e74c3c; /* 붉은색 */
+    margin-left: 4px; /* 연도 칩 그룹과의 간격 */
 }
 
-/* --- 4. 기타 스타일 및 문제 카드 --- */
-
-/* 들여쓰기 및 계층 스타일 */
-.sections { margin-left: 20px; display: none; }
-.sections.visible { display: block; }
-.items { margin-left: 20px; display: none; }
-.items.visible { display: block; }
-
-/* 토글 본문 영역 */
-.item-content { display: none; margin-top: 6px; }
-.item-content.visible { display: block; }
-.item-spacer { height: 10px; }
-.item-empty {
-    display: block;
-    margin: 6px 0;
-    padding: 8px 10px;
-    background: #fafafa;
-    border: 1px dashed rgba(0,0,0,.15);
-    border-radius: 8px;
-    color: #666;
-    font-size: 13px;
-}
-
-/* 문제 카드 스타일 (이전과 동일) */
+/* --- 4. 문제 카드 스타일 --- */
 .questions-output {
-    margin-top: 10px;
-    padding-left: 16px; 
-    border-left: 2px solid rgba(0,0,0,.08);
+    margin-top: 10px; padding-left: 16px; border-left: 2px solid rgba(0,0,0,.08);
 }
 .questions-container-list { list-style: none; padding: 0; margin: 0; }
 .question-card {
-    background: #fff;
-    border: 1px solid #d0d0d0;
-    border-radius: 8px;
-    padding: 12px;
-    margin-bottom: 12px;
+    background: #fff; border: 1px solid #d0d0d0; border-radius: 8px;
+    padding: 12px; margin-bottom: 12px;
 }
 .question-header { font-weight: 700; color: #0a66c2; margin-bottom: 8px; font-size: 14px; }
 .q-item-key { font-weight: 400; color: #666; font-size: 13px; margin-left: 8px; }
