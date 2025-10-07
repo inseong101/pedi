@@ -268,35 +268,37 @@ function initDashboard() {
 
     const chapterElements = new Map();
 
-    function chapterDisplayTitle(chapter) {
-        return `제${chapter.number}장 ${chapter.title}`;
-    }
+        const $line = document.createElement('button');
+        $line.type = 'button';
+        $line.className = 'chapter-line';
+        $line.setAttribute('aria-expanded', 'false');
 
-    function getChapterCacheKey(chapter) {
-        return chapter.file || `fallback-${chapter.number}`;
-    }
+        const $lineCount = document.createElement('span');
+        $lineCount.className = 'line-count';
+        $lineCount.innerHTML = chapterBreakdown.html;
 
-    function buildFallbackChapter(chapterNum) {
-        const sectionsMap = new Map();
-        const prefix = `${chapterNum} |`;
+        const $title = document.createElement('span');
+        $title.className = 'toc-title';
+        $title.textContent = title;
 
-        Object.entries(questionBank).forEach(([key, entries]) => {
-            if (!key.startsWith(prefix)) return;
-            const parts = key.split('|').map(part => part.trim());
-            const sectionNum = parts[1] || '0';
-            const itemNum = parts[2] || '0';
-            const questions = Array.isArray(entries) ? entries : [];
-            const firstQuestion = questions[0];
-            const itemLabel = firstQuestion && firstQuestion.item_key
-                ? firstQuestion.item_key
-                : `${chapterNum}.${sectionNum}.${itemNum}`;
+        const $icon = document.createElement('span');
+        $icon.className = 'toggle-icon';
+        $icon.setAttribute('aria-hidden', 'true');
 
-            if (!sectionsMap.has(sectionNum)) {
-                sectionsMap.set(sectionNum, {
-                    rawTitle: `제${Number(sectionNum)}절`,
-                    numericalKey: sectionNum,
-                    items: []
-                });
+        $line.append($lineCount, $title, $icon);
+
+        const $sections = document.createElement('div');
+        $sections.className = 'sections';
+
+        li.append($line, $sections);
+
+        $line.addEventListener('click', async (event) => {
+            event.stopPropagation();
+            const open = $line.getAttribute('aria-expanded') === 'true';
+            if (open) {
+                $sections.classList.remove('visible');
+                $line.setAttribute('aria-expanded', 'false');
+                return;
             }
 
             const section = sectionsMap.get(sectionNum);
@@ -319,47 +321,132 @@ function initDashboard() {
         return { sections };
     }
 
-    async function ensureChapterParsed(chapter) {
-        const cacheKey = getChapterCacheKey(chapter);
-        if (parsedCache.has(cacheKey)) {
-            return parsedCache.get(cacheKey);
-        }
+                if (!sections.length) {
+                    $sections.innerHTML = `<div class="item-empty">내용 없음</div>`;
+                } else {
+                    sections.forEach((sec, secIndex) => {
+                        const secWrap = document.createElement('div');
+                        secWrap.className = 'section';
+                        secWrap.dataset.sectionIndex = String(secIndex);
 
-        if (!chapter.file) {
-            const fallback = buildFallbackChapter(chapter.number);
-            const stored = { ...fallback, source: 'fallback' };
-            parsedCache.set(cacheKey, stored);
-            return stored;
-        }
+                        const sectionBreakdown = getSectionTotalBreakdown(chapterNum, sec.numericalKey);
 
-        try {
-            const res = await fetch(BASE + encodeURIComponent(chapter.file), { cache: 'no-store' });
-            if (!res.ok) throw new Error('fetch failed ' + res.status);
-            const md = await res.text();
-            const parsed = parseChapter(md);
-            const stored = { ...parsed, source: 'file' };
-            parsedCache.set(cacheKey, stored);
-            return stored;
-        } catch (error) {
-            console.error('장 로드 실패', chapter.file, error);
-            const fallback = buildFallbackChapter(chapter.number);
-            const stored = { ...fallback, source: 'fallback', error: true };
-            parsedCache.set(cacheKey, stored);
-            return stored;
-        }
-    }
+                        const $secLine = document.createElement('button');
+                        $secLine.type = 'button';
+                        $secLine.className = 'section-line';
+                        $secLine.setAttribute('aria-expanded', 'false');
 
-    function setSummaryText(element, text) {
-        if (element) {
-            element.textContent = text;
-        }
-    }
+                        const $secCount = document.createElement('span');
+                        $secCount.className = 'line-count';
+                        $secCount.innerHTML = sectionBreakdown.html;
 
-    function setSummaryHTML(element, html) {
-        if (element) {
-            element.innerHTML = html;
-        }
-    }
+                        const $secTitle = document.createElement('span');
+                        $secTitle.className = 'toc-title';
+                        $secTitle.textContent = sec.rawTitle;
+
+                        const $secIcon = document.createElement('span');
+                        $secIcon.className = 'toggle-icon';
+                        $secIcon.setAttribute('aria-hidden', 'true');
+
+                        $secLine.append($secCount, $secTitle, $secIcon);
+
+                        const $items = document.createElement('ul');
+                        $items.className = 'items';
+
+                        $secLine.addEventListener('click', (ev) => {
+                            ev.stopPropagation();
+                            const secOpen = $secLine.getAttribute('aria-expanded') === 'true';
+                            if (secOpen) {
+                                $items.classList.remove('visible');
+                                $secLine.setAttribute('aria-expanded', 'false');
+                            } else {
+                                if ($items.childElementCount === 0) {
+                                    const itemQuestionsTotal = [];
+
+                                    if (sec.items.length === 0) {
+                                        const emptyItem = document.createElement('li');
+                                        emptyItem.className = 'item-empty';
+                                        emptyItem.textContent = '등록된 항목이 없습니다.';
+                                        $items.appendChild(emptyItem);
+                                    } else {
+                                        sec.items.forEach((txt, itemIndex) => {
+                                            const itemLi = document.createElement('li');
+                                            itemLi.className = 'item';
+                                            itemLi.dataset.itemIndex = String(itemIndex);
+
+                                            const itemButton = document.createElement('button');
+                                            itemButton.type = 'button';
+                                            itemButton.className = 'item-line';
+                                            itemButton.setAttribute('aria-expanded', 'false');
+
+                                            const itemCount = document.createElement('span');
+                                            itemCount.className = 'line-count';
+
+                                            const [c, s, i] = getNumericalParts(txt);
+                                            const numericalKey = `${c} | ${s} | ${i}`;
+
+                                            const itemQuestions = questionBank[numericalKey] || [];
+                                            const itemBreakdown = getYearlyBreakdown(itemQuestions);
+                                            itemCount.innerHTML = itemBreakdown.html;
+                                            itemQuestionsTotal.push(...itemQuestions);
+
+                                            const itemTitle = document.createElement('span');
+                                            itemTitle.className = 'item-title';
+                                            itemTitle.textContent = txt;
+
+                                            const itemIcon = document.createElement('span');
+                                            itemIcon.className = 'toggle-icon';
+                                            itemIcon.setAttribute('aria-hidden', 'true');
+
+                                            itemButton.append(itemCount, itemTitle, itemIcon);
+
+                                            const itemContent = document.createElement('div');
+                                            itemContent.className = 'item-content questions-output';
+                                            itemContent.hidden = true;
+
+                                            itemButton.addEventListener('click', (evt) => {
+                                                evt.stopPropagation();
+                                                const itemOpen = itemButton.getAttribute('aria-expanded') === 'true';
+
+                                                if (itemOpen) {
+                                                    itemContent.classList.remove('visible');
+                                                    itemContent.hidden = true;
+                                                    itemButton.setAttribute('aria-expanded', 'false');
+                                                } else {
+                                                    if (!itemContent.dataset.loaded) {
+                                                        renderQuestions(itemQuestions, itemContent);
+                                                        itemContent.dataset.loaded = 'true';
+                                                    }
+
+                                                    itemContent.classList.add('visible');
+                                                    itemContent.hidden = false;
+                                                    itemButton.setAttribute('aria-expanded', 'true');
+                                                }
+                                            });
+
+                                            itemContent.addEventListener('click', (evt) => {
+                                                evt.stopPropagation();
+                                            });
+
+                                            itemLi.append(itemButton, itemContent);
+                                            $items.appendChild(itemLi);
+                                        });
+                                    }
+
+                                    const finalSectionBreakdown = getYearlyBreakdown(itemQuestionsTotal);
+                                    $secCount.innerHTML = finalSectionBreakdown.html;
+                                }
+
+                                $items.classList.add('visible');
+                                $secLine.setAttribute('aria-expanded', 'true');
+                            }
+                        });
+
+                        secWrap.append($secLine, $items);
+                        $sections.appendChild(secWrap);
+                    });
+                }
+            }
 
     function showPlaceholder(container, message, className = 'toc-empty') {
         if (!container) return;
@@ -534,12 +621,12 @@ function initDashboard() {
 
         setSummaryHTML($sectionSummary, `${entry.chapterTitle} (${columnState.sectionData.length}개 절) → ${entry.section.rawTitle} <span class="summary-breakdown">${entry.breakdown.html}</span>`);
 
-        if (options.scroll && $itemList && typeof $itemList.scrollIntoView === 'function') {
-            $itemList.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (options.scroll) {
+            $itemList?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         if (options.autoSelectFirstItem && columnState.itemData.length > 0) {
-            activateItemByIndex(0, { scroll: coalesce(options.scrollToItem, false) });
+            activateItemByIndex(0, { scroll: options.scrollToItem ?? false });
         }
 
         return entry;
@@ -566,10 +653,7 @@ function initDashboard() {
         showPlaceholder($conceptContainer, '이 항목의 개념 자료가 준비 중입니다. JSON 파일이 추가되면 이 패널에서 확인할 수 있습니다.', 'concept-empty');
 
         if (options.scroll) {
-            const questionHeader = document.getElementById('question-column-title');
-            if (questionHeader && typeof questionHeader.scrollIntoView === 'function') {
-                questionHeader.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
+            document.getElementById('question-column-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         return entry;
@@ -584,7 +668,7 @@ function initDashboard() {
 
         chapterElements.forEach(({ button }) => {
             if (!button) return;
-            const isCurrent = store && store.button === button;
+            const isCurrent = store?.button === button;
             button.classList.toggle('is-active', isCurrent);
             button.setAttribute('aria-pressed', isCurrent ? 'true' : 'false');
         });
@@ -603,7 +687,7 @@ function initDashboard() {
         uiState.activeSectionIndex = null;
         uiState.activeItemIndex = null;
 
-        const fallbackButton = (store && store.button) || document.querySelector(`button.chapter-card[data-chapter="${chapter.number}"]`);
+        const fallbackButton = store?.button || document.querySelector(`button.chapter-card[data-chapter="${chapter.number}"]`);
         const updatedStore = {
             button: fallbackButton || null,
             parsed
@@ -622,8 +706,8 @@ function initDashboard() {
         if (options.autoSelectFirstSection && columnState.sectionData.length > 0) {
             activateSectionByIndex(0, {
                 scroll: false,
-                autoSelectFirstItem: coalesce(options.autoSelectFirstItem, false),
-                scrollToItem: coalesce(options.scrollToItem, false)
+                autoSelectFirstItem: options.autoSelectFirstItem ?? false,
+                scrollToItem: options.scrollToItem ?? false
             });
         }
 
@@ -806,9 +890,27 @@ function initDashboard() {
             });
         }
 
-        if (entry.type === 'item' && Number.isInteger(entry.itemIndex)) {
-            activateItemByIndex(entry.itemIndex, { scroll: true });
-        }
+            if (entry.type === 'item' && entry.itemIndex !== null) {
+                window.requestAnimationFrame(() => {
+                    const itemEl = sectionEl.querySelectorAll('.item')[entry.itemIndex || 0];
+                    if (!itemEl) {
+                        sectionLine.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        return;
+                    }
+                    const itemButton = itemEl.querySelector('.item-line');
+                    if (!itemButton) {
+                        itemEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        return;
+                    }
+                    if (itemButton.getAttribute('aria-expanded') !== 'true') {
+                        itemButton.click();
+                    }
+                    itemButton.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
+            } else {
+                sectionLine.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
     }
 
     if ($searchInput) {
