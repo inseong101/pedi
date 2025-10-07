@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
     const BASE = './chapter/';
-    // CHAPTERS 목록은 레포지토리의 파일명을 기반으로 합니다.
     const CHAPTERS = [
         "1장 서론.md", "2장 소아의 진단.md", "3장 성장과 발달.md",
         "4장 유전.md", "5장 소아의 영양.md", "6장 소아 양생(小兒 養生).md",
@@ -36,53 +35,43 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 🚨 Item 레벨 문제 키 추출을 위한 함수
-    function getNumericalKey(chapterNum, sectionNum, itemText) {
-        // Item 텍스트에서 번호를 추출 (예: 1.1.1 소아과학의 정의 -> 1)
-        const match = itemText.match(/(\d+\.\d+\.)(\d+)\s/);
-        const itemNum = match ? match[2] : '0';
-        return `${chapterNum} | ${sectionNum} | ${itemNum}`;
-    }
-
-    // 🚨 Python의 parse_num_parts와 일치해야 함: [C, S, I]
-    function getNumericalParts(itemText) {
-        const parts = itemText.match(/\d+/g);
-        if (!parts || parts.length < 3) return ['0', '0', '0'];
-        return [parts[0], parts[1], parts[2]];
-    }
-
-
-    // 🚨 문제 배열을 받아 연도별 개수를 계산하고 HTML 문자열을 반환
+    // 🚨 핵심 수정: 총합 뱃지를 연도 뱃지 뒤에 배치
     function getYearlyBreakdown(questions) {
-        if (!questions || questions.length === 0) return { html: `<span class="yearly-breakdown"><span class="total-count-label">(0 문제)</span></span>`, count: 0 };
+        const total = questions ? questions.length : 0;
+        
+        if (total === 0) {
+            return { 
+                html: `<span class="yearly-breakdown"><span class="total-chip red-total-chip">0</span><span class="year-chips"></span></span>`, 
+                count: 0 
+            };
+        }
         
         const counts = {};
-        let total = 0;
-        
         questions.forEach(q => {
             const year = q.id.split('-')[0];
             counts[year] = (counts[year] || 0) + 1;
-            total++;
         });
 
         const years = ["2021", "2022", "2023", "2024", "2025"];
         const yearChips = [];
         
+        // 연도별 칩 생성 (0개 포함)
         years.forEach(year => {
-            const count = counts[year] || 0; 
+            const count = counts[year] || 0;
             const cssClass = count === 0 ? 'year-chip zero-count' : 'year-chip';
             yearChips.push(`<span class="${cssClass}" data-year="${year}">${year.slice(2)}:${count}</span>`);
         });
 
         const html = `
             <span class="yearly-breakdown">
-                <span class="total-count-label">(${total} 문제)</span>
                 <span class="year-chips">${yearChips.join('')}</span>
+                <span class="total-chip red-total-chip">${total}</span>
             </span>
         `;
         return { html, count: total };
     }
     
+    // Chapter Total Count 계산
     function getChapterTotalBreakdown(chapterNum, questionBank) {
         let allQuestions = [];
         const prefix = `${chapterNum} | `;
@@ -95,6 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return getYearlyBreakdown(allQuestions);
     }
     
+    // Global Total Count 계산
     function getGlobalTotalBreakdown(questionBank) {
         let allQuestions = [];
         for (const key in questionBank) {
@@ -117,7 +107,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (current) sections.push(current);
                 const rawTitle = line.replace(/^#\s*/, '');
                 
-                // # 1절 -> 1
                 const secMatch = rawTitle.match(/^(\d+)절\s*/);
                 const sectionNum = secMatch ? secMatch[1] : '0';
 
@@ -127,10 +116,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     items: [] 
                 };
             } else if (line.startsWith('- ')) {
-                // Item은 그대로 텍스트를 저장합니다.
                 if (current) {
                     const itemRaw = line.replace(/^-+\s*/, '').trim(); 
-                    current.items.push(itemRaw); // Item 텍스트를 그대로 저장 (C.S.I. 제목 포함)
+                    current.items.push(itemRaw); 
                 }
             }
         }
@@ -148,9 +136,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const ul = document.createElement('ul');
         ul.classList.add('questions-container-list');
 
-        // ... (문제 표시 로직 생략 - 이전과 동일)
-        // ... (최종 코드에서는 생략하지 않음)
-        
         questions.forEach(q => {
             const li = document.createElement('li');
             li.classList.add('question-card');
@@ -209,14 +194,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const chapMatch = file.match(/^(\d+)/);
         const chapterNum = chapMatch ? chapMatch[1] : '0';
         
-        // Chapter 전체 문제 수 계산 및 HTML 생성
         const chapterBreakdown = getChapterTotalBreakdown(chapterNum, questionBank);
 
 
         li.className = 'chapter';
         li.innerHTML = `
           <div class="chapter-line" role="button" aria-expanded="false">
-            ${title} 
+            <span class="toc-title">${title}</span>
             <span class="q-total-badge">
                 ${chapterBreakdown.html}
             </span>
@@ -261,12 +245,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         secWrap.className = 'section';
                         
                         // Section별 문제 개수 계산 및 HTML 생성
-                        const sectionQuestions = []; // Item 클릭 전에는 0으로 표시
-                        const sectionBreakdown = getYearlyBreakdown(sectionQuestions);
-                        
+                        const numericalKeyBase = `${chapterNum} | ${sec.numericalKey}`;
+                        const sectionQuestions = []; // Item 클릭 전에는 0으로 표시 (Item level에서 계산)
+                        const sectionBreakdown = getYearlyBreakdown(sectionQuestions); // 0개로 초기화
+
                         secWrap.innerHTML = `
                           <div class="section-line" role="button" aria-expanded="false">
-                            ${sec.rawTitle} 
+                            <span class="toc-title">${sec.rawTitle}</span>
                             <span class="q-count-badge">
                                 ${sectionBreakdown.html}
                             </span>
@@ -286,6 +271,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             } else {
                                 // 1. Item 렌더링
                                 if ($items.childElementCount === 0) {
+                                    let itemQuestionsTotal = [];
+                                    
                                     if (sec.items.length === 0) {
                                         const spacer = document.createElement('div');
                                         spacer.className = 'item-spacer';
@@ -296,19 +283,23 @@ document.addEventListener('DOMContentLoaded', () => {
                                             itemLi.className = 'item item-line';
                                             itemLi.setAttribute('role', 'button');
                                             itemLi.setAttribute('aria-expanded', 'false');
-                                            itemLi.innerHTML = `
-                                                <div class="item-title">${txt}</div>
-                                                <div class="item-content questions-output"></div>
-                                            `;
 
-                                            const $itemContent = itemLi.querySelector('.item-content');
-                                            const [c, s, i] = getNumericalParts(txt); // txt = C.S.I. 이름
+                                            const [c, s, i] = getNumericalParts(txt);
                                             const numericalKey = `${c} | ${s} | ${i}`;
                                             
                                             // Item 레벨 문제 개수 표시
                                             const itemQuestions = questionBank[numericalKey] || [];
                                             const itemBreakdown = getYearlyBreakdown(itemQuestions);
-                                            itemLi.querySelector('.item-title').innerHTML += `<span class="q-count-badge" style="margin-left: 10px;">${itemBreakdown.html}</span>`;
+                                            
+                                            // Section total을 위해 합산
+                                            itemQuestionsTotal = itemQuestionsTotal.concat(itemQuestions);
+
+                                            itemLi.innerHTML = `
+                                                <div class="item-title">${txt}<span class="q-count-badge" style="margin-left: 10px;">${itemBreakdown.html}</span></div>
+                                                <div class="item-content questions-output"></div>
+                                            `;
+
+                                            const $itemContent = itemLi.querySelector('.item-content');
 
                                             // Item 클릭 -> 문제 표시
                                             itemLi.addEventListener('click', (ev) => {
@@ -319,7 +310,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                                     $itemContent.classList.remove('visible');
                                                     itemLi.setAttribute('aria-expanded', 'false');
                                                 } else {
-                                                    // 문제 로드 및 렌더링
                                                     if ($itemContent.childElementCount === 0) {
                                                         renderQuestions(itemQuestions, $itemContent);
                                                     }
@@ -331,6 +321,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                             $items.appendChild(itemLi);
                                         });
                                     }
+                                    
+                                    // Item 렌더링이 완료된 후 Section Total 뱃지 업데이트
+                                    const finalSectionBreakdown = getYearlyBreakdown(itemQuestionsTotal);
+                                    $secLine.querySelector('.q-count-badge').innerHTML = finalSectionBreakdown.html;
                                 }
                                 
                                 $items.classList.add('visible');
