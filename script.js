@@ -15,29 +15,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const parsedCache = new Map();
     let questionBank = {};
-    let keyMapping = {};
+    // keyMapping은 더 이상 사용하지 않습니다.
 
+    // 텍스트 정규화: 괄호 및 내용 제거, 공백 정리
     function normalizeText(text) {
         if (!text) return "";
         let normalized = text.replace(/\([^)]*\)/g, '').trim();
         return normalized.replace(/\s+/g, ' ');
     }
     
-    // 데이터 로드: JSON 파일 두 개를 비동기적으로 로드
+    // 데이터 로드: key_mapping은 제외하고 question_bank만 로드합니다.
     async function loadData() {
         try {
-            const [qBankRes, mappingRes] = await Promise.all([
-                fetch('question_bank.json'),
-                fetch('key_mapping.json')
-            ]);
+            const qBankRes = await fetch('question_bank.json');
             
-            if (!qBankRes.ok || !mappingRes.ok) {
-                console.error("Failed to load question data or key mapping. Check network tab and file paths.");
+            if (!qBankRes.ok) {
+                console.error("Failed to load question data (question_bank.json). Check file path/network.");
                 return false;
             }
             
             questionBank = await qBankRes.json();
-            keyMapping = await mappingRes.json();
             return true;
         } catch (e) {
             console.error("Error during data fetching:", e);
@@ -45,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 마크다운 파서: 섹션 번호를 추출합니다.
+    // 마크다운 파서: 섹션 번호만 추출합니다.
     function parseChapter(md) {
         const sections = [];
         let current = null;
@@ -59,13 +56,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (current) sections.push(current);
                 const rawTitle = line.replace(/^#\s*/, '');
                 
-                // 🚨 핵심 수정: 섹션 번호만 추출합니다. (# 1절 -> 1)
+                // 섹션 번호만 추출합니다. (# 1절 -> 1)
                 const secMatch = rawTitle.match(/^(\d+)절\s*/);
-                const sectionNum = secMatch ? secMatch[1] : 0;
+                const sectionNum = secMatch ? secMatch[1] : '0'; // String '1', '2' or '0'
 
                 current = { 
                     rawTitle: rawTitle, 
-                    numericalKey: sectionNum, // 숫자만 저장
+                    numericalKey: sectionNum, // 숫자만 문자열로 저장
                     items: [] 
                 };
             } else if (line.startsWith('- ')) {
@@ -80,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return { sections };
     }
 
-    // 문제 표시 DOM 생성 (렌더링 로직은 숫자 키와 무관하므로 그대로 유지)
+    // 문제 표시 DOM 생성
     function renderQuestions(questions, $target) {
         if (questions.length === 0) {
              $target.innerHTML = `<div class="item-empty no-question">⚠️ 이 Section에 연결된 2021~2025년 기출 문제가 없습니다.</div>`;
@@ -144,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const title = `제${file.replace(/\.md$/, '')}`;
         const li = document.createElement('li');
         
-        // 🚨 핵심 수정: Chapter 번호만 추출합니다. (예: 10장 호흡기...md -> 10)
+        // 챕터 번호만 문자열로 추출 (예: '10')
         const chapMatch = file.match(/^(\d+)/);
         const chapterNum = chapMatch ? chapMatch[1] : '0';
 
@@ -226,19 +223,19 @@ document.addEventListener('DOMContentLoaded', () => {
                                 }
                                 
                                 // 2. 문제 데이터 로드 및 렌더링
-                                // 🚨 최종 키: "Chapter Num | Section Num"
+                                // 최종 키: "Chapter Num | Section Num"
                                 const numericalKey = `${chapterNum} | ${sec.numericalKey}`;
                                 
-                                // JSON에서는 key_mapping을 사용하지 않고 questionBank에서 바로 찾습니다.
-                                const rawCsvKey = numericalKey; // key_mapping에서 찾지 않고 바로 사용합니다.
-
-                                if (questionBank[rawCsvKey]) {
-                                    const questions = questionBank[rawCsvKey];
+                                // questionBank에서 직접 키를 찾습니다.
+                                if (questionBank[numericalKey]) {
+                                    const questions = questionBank[numericalKey];
                                     $questionsContainer.innerHTML = ''; 
                                     renderQuestions(questions, $questionsContainer);
                                     $questionsContainer.style.display = 'block';
                                 } else {
-                                    $questionsContainer.innerHTML = `<div class="item-empty no-question">⚠️ 이 목차 (${numericalKey})에 매칭되는 문제가 없습니다. (키 불일치 또는 문제 없음)</div>`;
+                                    // 디버깅을 위해 에러 메시지에 찾으려는 키를 포함합니다.
+                                    console.log('Key not found:', numericalKey);
+                                    $questionsContainer.innerHTML = `<div class="item-empty no-question">⚠️ 이 목차 (${numericalKey})에 매칭되는 문제가 없습니다.</div>`;
                                     $questionsContainer.style.display = 'block';
                                 }
 
@@ -267,7 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 $list.appendChild(makeChapterRow(file));
             });
         } else {
-            $list.innerHTML = '<li class="item-empty">문제 데이터 로드에 실패했습니다. (question_bank.json 또는 key_mapping.json 파일 경로/상태 확인 필요)</li>';
+            $list.innerHTML = '<li class="item-empty">문제 데이터 로드에 실패했습니다. (question_bank.json이 올바른 경로에 있는지 확인해주세요.)</li>';
         }
     });
 });
