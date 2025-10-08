@@ -49,8 +49,8 @@ function initDashboard() {
             mediaBase: './media/hanbang/',
             chapterGrouping: 'section',
             chapters: [
-                { number: '1', title: '총론', file: '1장 장부론.md' },
-                { number: '2', title: '각론', file: '2장 음양오행.md' },
+                { number: '1', title: '총론', file: '1장 총론.md' },
+                { number: '2', title: '각론', file: '2장 각론.md' },
             ]
         }
     ];
