@@ -379,7 +379,7 @@ function initDashboard() {
                 const uniqueSources = Array.from(new Set(sourceCandidates));
 
                 if (!uniqueSources.length) {
-                    finish();
+                    processIndex(index + 1);
                     return;
                 }
 
@@ -426,7 +426,7 @@ function initDashboard() {
                         return;
                     }
                     cleanup();
-                    finish();
+                    processIndex(index + 1);
                 };
 
                 tester.onload = handleSuccess;
