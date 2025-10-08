@@ -1284,13 +1284,6 @@ function initDashboard() {
                     const option = marker.closest('li');
                     if (option) {
                         option.dataset.correct = 'true';
-                        if (!option.querySelector('.answer-badge')) {
-                            const badge = document.createElement('span');
-                            badge.className = 'answer-badge';
-                            badge.textContent = '정답';
-                            badge.setAttribute('aria-hidden', 'true');
-                            option.appendChild(badge);
-                        }
                     }
                     marker.remove();
                 });
@@ -1305,6 +1298,10 @@ function initDashboard() {
     function buildChapterDetail(chapter, container) {
         const chapterNumber = chapter.number;
         const chapterTitle = chapterDisplayTitle(chapter);
+        const displayMeta = getDisplayMeta(chapterNumber);
+        const parentChapterTitle = (chapterGrouping === 'section' && displayMeta && displayMeta.parentChapterTitle)
+            ? displayMeta.parentChapterTitle
+            : chapterTitle;
         const chapterQuestions = chapterYearIndex.get(`${chapterNumber}|all`) || [];
 
         container.innerHTML = '';
@@ -1371,8 +1368,13 @@ function initDashboard() {
             const sectionQuestions = chapterQuestions.filter(q => q.sectionNumber === section.numericalKey);
             const sectionCount = filterQuestionsByYear(sectionQuestions, state.activeYear).length;
             const sectionCountClass = sectionCount > 0 ? 'section-count' : 'section-count is-zero';
+            const sectionLabel = section.rawTitle || `제${Number(section.numericalKey || section.sectionIndex + 1)}절`;
+            const sectionTitleText = chapterGrouping === 'section'
+                ? `${parentChapterTitle} ${sectionLabel}`
+                : sectionLabel;
+
             summary.innerHTML = `
-                <span class="section-title">${section.rawTitle}</span>
+                <span class="section-title">${sectionTitleText}</span>
                 <span class="${sectionCountClass}">${formatNumber(sectionCount)}문제</span>
             `;
             details.appendChild(summary);
@@ -1466,9 +1468,6 @@ function initDashboard() {
         `;
         container.appendChild(header);
 
-        const detailGrid = document.createElement('div');
-        detailGrid.className = 'item-detail-grid';
-
         const questionWrap = document.createElement('div');
         questionWrap.className = 'item-detail-questions';
         const questions = filterQuestionsByYear(questionBank[itemEntry.numericalKey] || [], state.activeYear).map((q) => ({
@@ -1476,14 +1475,7 @@ function initDashboard() {
             itemLabel: q.itemLabel || itemLabel
         }));
         renderQuestions(questions, questionWrap);
-        detailGrid.appendChild(questionWrap);
-
-        const conceptWrap = document.createElement('div');
-        conceptWrap.className = 'item-detail-concept';
-        detailGrid.appendChild(conceptWrap);
-        loadConceptContent(itemEntry.numericalKey, conceptWrap);
-
-        container.appendChild(detailGrid);
+        container.appendChild(questionWrap);
     }
 
     function scrollToChapterDetail(chapterNumber) {
