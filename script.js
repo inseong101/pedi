@@ -1,5 +1,5 @@
 function initDashboard() {
-    const ASSET_VERSION = '20241008';
+    const ASSET_VERSION = '20241009';
     const DEFAULT_SUBJECT_ID = 'pedi';
     const SUBJECTS = [
         {
@@ -129,6 +129,37 @@ function initDashboard() {
     let rawQuestionBanks = null;
     let rawKeyMappings = null;
     const processedQuestionBankCache = new Map();
+    let mediaManifest = null;
+    let mediaManifestPromise = null;
+    let currentSubjectMediaMap = new Map();
+
+    function normalizeManifestSubject(data) {
+        const map = new Map();
+        if (!data || typeof data !== 'object') {
+            return map;
+        }
+        Object.keys(data).forEach((key) => {
+            const value = data[key];
+            if (!value || typeof value !== 'object') return;
+            const primary = Array.isArray(value.primary) ? value.primary.slice() : [];
+            const sequential = Array.isArray(value.sequential) ? value.sequential.slice() : [];
+            map.set(key, { primary, sequential });
+        });
+        return map;
+    }
+
+    async function ensureMediaManifestLoaded() {
+        if (!mediaManifestPromise) {
+            mediaManifestPromise = fetch(`media_manifest.json?v=${ASSET_VERSION}`)
+                .then((res) => (res.ok ? res.json() : null))
+                .catch(() => null)
+                .then((data) => {
+                    mediaManifest = data && typeof data === 'object' ? data : {};
+                    return mediaManifest;
+                });
+        }
+        return mediaManifestPromise;
+    }
 
     function getSubjectById(id) {
         return SUBJECTS.find((subject) => subject.id === id) || null;
@@ -250,6 +281,20 @@ function initDashboard() {
         let primaryEntry = null;
         const candidateSources = [];
 
+        const manifestEntry = safeId && currentSubjectMediaMap.size ? currentSubjectMediaMap.get(safeId) : null;
+        const manifestPrimaryNames = manifestEntry && Array.isArray(manifestEntry.primary) ? manifestEntry.primary : [];
+        const manifestSequentialNames = manifestEntry && Array.isArray(manifestEntry.sequential) ? manifestEntry.sequential : [];
+
+        if (manifestPrimaryNames.length) {
+            manifestPrimaryNames.forEach((name) => {
+                pushGuidance(name);
+                const url = buildMediaUrl(name);
+                if (url && !candidateSources.includes(url)) {
+                    candidateSources.push(url);
+                }
+            });
+        }
+
         if (raw && !placeholderName) {
             const direct = buildMediaUrl(raw);
             if (direct && !candidateSources.includes(direct)) {
@@ -258,7 +303,11 @@ function initDashboard() {
             pushGuidance(raw);
         }
 
-        if (safeId) {
+        const hasManifestEntry = !!manifestEntry;
+        const hasSequentialManifest = manifestSequentialNames.length > 0;
+        const hasDirectMedia = !!(raw && !placeholderName);
+
+        if (!candidateSources.length && safeId && !hasManifestEntry) {
             MEDIA_EXTENSIONS.forEach((ext) => {
                 const fileName = `${safeId}.${ext}`;
                 const candidate = buildMediaUrl(fileName);
@@ -268,15 +317,11 @@ function initDashboard() {
             });
             pushGuidance(`${safeId}.png`);
             pushGuidance(`${safeId}.jpg`);
-            pushGuidance(`${safeId}-1.png`);
-            pushGuidance(`${safeId}-2.png`);
         }
 
-        if (!candidateSources.length && placeholderUrl) {
+        if (!candidateSources.length && placeholderUrl && !hasSequentialManifest) {
             candidateSources.push(placeholderUrl);
         }
-
-        const hasExplicitMedia = !!(raw && !placeholderName);
 
         if (candidateSources.length) {
             const fallbacks = candidateSources.slice(1);
@@ -287,18 +332,33 @@ function initDashboard() {
                 initial: candidateSources[0],
                 fallbacks,
                 expectedNames: guidanceNames,
-                optional: !hasExplicitMedia
+                optional: !(manifestPrimaryNames.length || hasDirectMedia)
             };
         }
 
-        const sequential = safeId
-            ? {
-                baseId: safeId,
-                startIndex: 1,
-                maxCount: 5,
-                extensions: MEDIA_EXTENSIONS
+        manifestSequentialNames.forEach(pushGuidance);
+
+        let sequential = null;
+
+        if (manifestSequentialNames.length) {
+            const files = manifestSequentialNames
+                .map((name, index) => {
+                    const url = buildMediaUrl(name);
+                    if (!url) return null;
+                    const match = name.match(/-(\d+)(?=\.[^.]+$)/);
+                    const altIndex = match ? Number(match[1]) : index + 1;
+                    return {
+                        initial: url,
+                        expectedNames: [name],
+                        optional: false,
+                        alt: `문제 자료 ${altIndex}`
+                    };
+                })
+                .filter(Boolean);
+            if (files.length) {
+                sequential = { files };
             }
-            : null;
+        }
 
         if (!primaryEntry && !sequential) {
             return null;
@@ -347,7 +407,43 @@ function initDashboard() {
 
     function loadSequentialMedia(container, info, onAppend) {
         return new Promise((resolve) => {
-            if (!container || !info || !info.baseId) {
+            if (!container || !info) {
+                resolve();
+                return;
+            }
+
+            if (Array.isArray(info.files) && info.files.length) {
+                info.files.forEach((entry, index) => {
+                    if (!entry || !entry.initial) return;
+                    const figure = createQuestionMediaFigure({
+                        initial: entry.initial,
+                        fallbacks: Array.isArray(entry.fallbacks) ? entry.fallbacks : [],
+                        expectedNames: Array.isArray(entry.expectedNames)
+                            ? entry.expectedNames
+                            : entry.expectedNames
+                                ? [entry.expectedNames]
+                                : [],
+                        optional: entry.optional === true,
+                        alt: entry.alt || `문제 자료 ${index + 1}`
+                    });
+                    if (figure) {
+                        const img = figure.querySelector('img');
+                        if (img) {
+                            if (!img.alt || img.alt === '문제 자료') {
+                                img.alt = entry.alt || `문제 자료 ${index + 1}`;
+                            }
+                            if (typeof onAppend === 'function') {
+                                onAppend(img);
+                            }
+                        }
+                        container.appendChild(figure);
+                    }
+                });
+                resolve();
+                return;
+            }
+
+            if (!info.baseId) {
                 resolve();
                 return;
             }
@@ -432,7 +528,6 @@ function initDashboard() {
                 tester.onload = handleSuccess;
                 tester.onerror = handleError;
                 tester.decoding = 'async';
-                tester.loading = 'lazy';
                 tester.src = uniqueSources[attempt];
             };
 
@@ -1251,6 +1346,7 @@ function initDashboard() {
 
         const questionPayload = await ensureQuestionBanksLoaded();
         await ensureKeyMappingsLoaded();
+        await ensureMediaManifestLoaded();
 
         if (!questionPayload) {
             if ($matrixSummary) {
@@ -1265,6 +1361,7 @@ function initDashboard() {
         CONCEPT_BASE = subject.conceptBase;
         const rawMediaBase = subject.mediaBase || '';
         MEDIA_BASE = rawMediaBase ? (rawMediaBase.endsWith('/') ? rawMediaBase : `${rawMediaBase}/`) : '';
+        currentSubjectMediaMap = normalizeManifestSubject(mediaManifest ? mediaManifest[subject.id] : null);
         baseChapters = subject.chapters;
         baseChapterIndex = new Map();
         baseChapters.forEach((chapter) => {
