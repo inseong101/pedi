@@ -834,35 +834,11 @@ h1, h2, h3 {
     color: var(--text-tertiary);
 }
 
-.item-detail-grid {
-    display: grid;
-    grid-template-columns: minmax(260px, 1fr) minmax(0, 2fr);
-    gap: 16px;
-    align-items: start;
-}
-
-@media (max-width: 1040px) {
-    .item-detail-grid {
-        grid-template-columns: minmax(220px, 1fr) minmax(0, 2fr);
-    }
-}
-
-@media (max-width: 720px) {
-    .item-detail-grid {
-        grid-template-columns: minmax(0, 1fr);
-    }
-}
-
-.item-detail-questions,
-.item-detail-concept {
+.item-detail-questions {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
     min-width: 0;
-}
-
-.item-detail-concept .concept-status {
-    align-self: flex-start;
 }
 
 .concept-content {
@@ -1028,9 +1004,21 @@ h1, h2, h3 {
     list-style: none;
     padding: 0;
     margin: 0;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 16px;
+}
+
+@media (max-width: 1080px) {
+    .questions-container-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 720px) {
+    .questions-container-list {
+        grid-template-columns: minmax(0, 1fr);
+    }
 }
 
 .question-card {
@@ -1123,27 +1111,8 @@ h1, h2, h3 {
 }
 
 .question-options li[data-correct="true"] {
-    position: relative;
-    padding-right: 48px;
     color: var(--answer-emphasis);
     font-weight: 700;
-}
-
-.answer-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    position: absolute;
-    top: 50%;
-    right: 4px;
-    transform: translateY(-50%);
-    background: rgba(248, 113, 113, 0.18);
-    color: var(--answer-emphasis);
-    font-weight: 700;
-    font-size: 11px;
-    padding: 2px 6px;
-    border-radius: 999px;
-    letter-spacing: 0.5px;
 }
 
 /* 반응형 */
@@ -1173,7 +1142,4 @@ h1, h2, h3 {
         padding: 12px 14px;
     }
 
-    .item-detail-grid {
-        grid-template-columns: 1fr;
-    }
 }
