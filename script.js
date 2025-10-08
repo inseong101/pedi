@@ -47,9 +47,10 @@ function initDashboard() {
             chapterBase: './chapter/hanbang/',
             conceptBase: './concept/hanbang/',
             mediaBase: './media/hanbang/',
+            chapterGrouping: 'section',
             chapters: [
-                { number: '1', title: '총론', file: '1장 장부론.md' },
-                { number: '2', title: '각론', file: '2장 음양오행.md' },
+                { number: '1', title: '총론', file: '1장 총론.md' },
+                { number: '2', title: '각론', file: '2장 각론.md' },
             ]
         }
     ];
@@ -58,7 +59,12 @@ function initDashboard() {
     let CHAPTER_BASE = '';
     let CONCEPT_BASE = '';
     let MEDIA_BASE = '';
+    let baseChapters = [];
+    let baseChapterIndex = new Map();
     let CHAPTERS = [];
+    let displayMetaByNumber = new Map();
+    let sourceToDisplayKey = new Map();
+    let chapterGrouping = 'chapter';
 
     let questionBank = {};
     let parsedCache = new Map();
@@ -164,6 +170,15 @@ function initDashboard() {
             return;
         }
 
+        if (yearKey === 'all') {
+            button.style.background = '';
+            button.style.color = '';
+            button.style.boxShadow = '';
+            button.removeAttribute('data-intensity');
+            button.classList.remove('has-heat');
+            return;
+        }
+
         const max = yearKey === 'all' ? (yearMaxCounts.total || 0) : (yearMaxCounts[yearKey] || 0);
         if (!max) {
             button.style.background = '';
@@ -175,18 +190,17 @@ function initDashboard() {
         }
 
         const ratio = Math.min(1, Math.max(0, count / max));
-        const eased = Math.pow(ratio, 0.75);
-        const hue = 199;
-        const highlight = isRecentYear(yearKey) ? 1 : 0;
-        const saturation = highlight ? 94 : 86;
-        const minLightness = highlight ? 84 : 88;
-        const maxLightness = highlight ? 30 : 36;
-        const lightness = minLightness - (minLightness - maxLightness) * eased;
+        const eased = Math.pow(ratio, 0.7);
+        const hue = 358;
+        const saturation = 84;
+        const baseLightness = 88;
+        const minLightness = 40;
+        const lightness = baseLightness - (baseLightness - minLightness) * eased;
         button.style.background = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-        button.style.color = eased >= 0.45 ? 'var(--accent-on-dark)' : 'var(--text-primary)';
-        const shadowLightness = Math.max(24, lightness - 12 - highlight * 4);
-        const shadowOpacity = 0.35 + 0.3 * eased + highlight * 0.08;
-        button.style.boxShadow = `inset 0 0 0 1px hsla(${hue}, ${saturation + 4}%, ${shadowLightness}%, ${shadowOpacity.toFixed(3)})`;
+        button.style.color = lightness < 58 ? 'var(--accent-on-dark)' : 'var(--text-primary)';
+        const shadowLightness = Math.max(24, lightness - 18);
+        const shadowOpacity = 0.35 + 0.35 * eased;
+        button.style.boxShadow = `inset 0 0 0 1px hsla(${hue}, ${saturation + 6}%, ${shadowLightness}%, ${shadowOpacity.toFixed(3)})`;
         button.dataset.intensity = ratio.toFixed(3);
         button.classList.toggle('has-heat', ratio > 0);
     }
@@ -534,7 +548,10 @@ function initDashboard() {
     }
 
     function chapterDisplayTitle(chapter) {
-        return `제${chapter.number}장 ${chapter.title}`;
+        if (!chapter) return '';
+        if (chapter.displayTitle) return chapter.displayTitle;
+        const title = chapter.title ? ` ${chapter.title}` : '';
+        return `제${chapter.number}장${title}`.trim();
     }
 
     function clearElement(element) {
@@ -621,6 +638,17 @@ function initDashboard() {
         return { sections };
     }
 
+    function resolveSourceChapter(chapter) {
+        if (!chapter) return null;
+        if (chapter.sourceChapter) {
+            return baseChapterIndex.get(chapter.sourceChapter) || chapter;
+        }
+        if (chapter.number && baseChapterIndex.has(chapter.number)) {
+            return baseChapterIndex.get(chapter.number);
+        }
+        return chapter;
+    }
+
     function getChapterCacheKey(chapter) {
         return chapter.file || `fallback-${chapter.number}`;
     }
@@ -677,35 +705,40 @@ function initDashboard() {
     }
 
     async function ensureChapterParsed(chapter) {
-        const cacheKey = getChapterCacheKey(chapter);
+        const sourceChapter = resolveSourceChapter(chapter);
+        if (!sourceChapter) {
+            return { sections: [] };
+        }
+
+        const cacheKey = getChapterCacheKey(sourceChapter);
         if (parsedCache.has(cacheKey)) {
             return parsedCache.get(cacheKey);
         }
 
         let parsed;
 
-        if (!chapter.file) {
-            parsed = buildFallbackChapter(chapter.number);
+        if (!sourceChapter.file) {
+            parsed = buildFallbackChapter(sourceChapter.number);
         } else {
             try {
-                const chapterUrl = `${CHAPTER_BASE}${encodeURIComponent(chapter.file)}?v=${ASSET_VERSION}`;
+                const chapterUrl = `${CHAPTER_BASE}${encodeURIComponent(sourceChapter.file)}?v=${ASSET_VERSION}`;
                 const res = await fetch(chapterUrl, { cache: 'no-store' });
                 if (!res.ok) throw new Error('fetch failed ' + res.status);
                 const md = await res.text();
                 parsed = parseChapter(md);
             } catch (error) {
-                console.error('장 로드 실패', chapter.file, error);
-                parsed = buildFallbackChapter(chapter.number);
+                console.error('장 로드 실패', sourceChapter.file, error);
+                parsed = buildFallbackChapter(sourceChapter.number);
             }
         }
 
-        registerChapterStructure(chapter, parsed);
+        registerChapterStructure(sourceChapter, parsed);
         parsedCache.set(cacheKey, parsed);
         return parsed;
     }
 
     async function preloadAllChapters() {
-        const tasks = CHAPTERS.map((chapter) => ensureChapterParsed(chapter).catch(() => ({ sections: [] })));
+        const tasks = baseChapters.map((chapter) => ensureChapterParsed(chapter).catch(() => ({ sections: [] })));
         await Promise.all(tasks);
     }
 
@@ -713,14 +746,16 @@ function initDashboard() {
         const sections = Array.isArray(parsed.sections) ? parsed.sections : [];
         const normalizedSections = sections.map((section, sectionIndex) => {
             const rawTitle = section.rawTitle || `제${Number(section.numericalKey || sectionIndex + 1)}절`;
+            const sectionKey = section.numericalKey || String(sectionIndex + 1);
             const items = Array.isArray(section.items) ? section.items : [];
 
             const normalizedItems = items.map((label, itemIndex) => {
                 const [c, s, i] = getNumericalParts(label);
                 const numericalKey = `${c} | ${s} | ${i}`;
                 itemMetadata.set(numericalKey, {
-                    chapterNumber: chapter.number,
-                    chapterTitle: chapterDisplayTitle(chapter),
+                    baseChapterNumber: chapter.number,
+                    baseChapterTitle: chapterDisplayTitle(chapter),
+                    sectionKey,
                     sectionIndex,
                     sectionTitle: rawTitle,
                     itemIndex,
@@ -731,13 +766,14 @@ function initDashboard() {
                     label,
                     numericalKey,
                     sectionIndex,
+                    sectionKey,
                     itemIndex
                 };
             });
 
             return {
                 rawTitle,
-                numericalKey: section.numericalKey || String(sectionIndex + 1),
+                numericalKey: sectionKey,
                 sectionIndex,
                 items: normalizedItems
             };
@@ -747,6 +783,118 @@ function initDashboard() {
             chapterTitle: chapterDisplayTitle(chapter),
             sections: normalizedSections
         });
+    }
+
+    function buildDisplayChapterIndex() {
+        displayMetaByNumber = new Map();
+        sourceToDisplayKey = new Map();
+
+        const display = [];
+
+        if (chapterGrouping === 'section') {
+            baseChapters.forEach((chapter) => {
+                const structure = chapterStructure.get(chapter.number);
+                if (!structure) return;
+                const parentTitle = chapterDisplayTitle(chapter);
+
+                structure.sections.forEach((section) => {
+                    const sectionKey = section.numericalKey || String(section.sectionIndex + 1);
+                    const displayNumber = `${chapter.number}-${sectionKey}`;
+                    const numericSection = Number(sectionKey);
+                    const defaultSectionTitle = Number.isFinite(numericSection)
+                        ? `제${numericSection}절`
+                        : `${sectionKey}`;
+                    const displayTitle = section.rawTitle || defaultSectionTitle;
+                    const combinedTitle = `${parentTitle} · ${displayTitle}`;
+                    const meta = {
+                        number: displayNumber,
+                        title: displayTitle,
+                        displayTitle: combinedTitle,
+                        sectionTitle: displayTitle,
+                        file: chapter.file,
+                        sourceChapter: chapter.number,
+                        sourceSection: sectionKey,
+                        sourceSectionIndex: section.sectionIndex,
+                        parentChapterTitle: parentTitle
+                    };
+                    display.push(meta);
+                    displayMetaByNumber.set(displayNumber, meta);
+                    sourceToDisplayKey.set(`${chapter.number}|${sectionKey}`, displayNumber);
+                });
+            });
+        } else {
+            baseChapters.forEach((chapter) => {
+                const displayTitle = chapterDisplayTitle(chapter);
+                const meta = {
+                    ...chapter,
+                    displayTitle,
+                    sourceChapter: chapter.number,
+                    sourceSection: null,
+                    sourceSectionIndex: null,
+                    parentChapterTitle: displayTitle
+                };
+                display.push(meta);
+                displayMetaByNumber.set(chapter.number, meta);
+                sourceToDisplayKey.set(`${chapter.number}|*`, chapter.number);
+            });
+        }
+
+        CHAPTERS = display;
+        syncItemMetadataWithDisplay();
+    }
+
+    function resolveDisplayChapterKey(chapterNumber, sectionKey) {
+        if (!chapterNumber) return chapterNumber;
+        if (sectionKey && sourceToDisplayKey.has(`${chapterNumber}|${sectionKey}`)) {
+            return sourceToDisplayKey.get(`${chapterNumber}|${sectionKey}`);
+        }
+        if (sourceToDisplayKey.has(`${chapterNumber}|*`)) {
+            return sourceToDisplayKey.get(`${chapterNumber}|*`);
+        }
+        return chapterNumber;
+    }
+
+    function syncItemMetadataWithDisplay() {
+        itemMetadata.forEach((meta) => {
+            if (!meta) return;
+            const displayKey = resolveDisplayChapterKey(meta.baseChapterNumber, meta.sectionKey);
+            const displayMeta = displayMetaByNumber.get(displayKey);
+            meta.chapterNumber = displayKey || meta.baseChapterNumber;
+            if (displayMeta) {
+                if (chapterGrouping === 'section' && displayMeta.parentChapterTitle) {
+                    const sectionTitle = displayMeta.sectionTitle || displayMeta.displayTitle;
+                    meta.chapterTitle = `${displayMeta.parentChapterTitle} → ${sectionTitle}`;
+                } else {
+                    meta.chapterTitle = displayMeta.displayTitle;
+                }
+            } else {
+                meta.chapterTitle = meta.baseChapterTitle;
+            }
+        });
+    }
+
+    function getDisplayMeta(chapterNumber) {
+        return displayMetaByNumber.get(chapterNumber) || null;
+    }
+
+    function getStructureForDisplayChapter(chapter) {
+        const meta = getDisplayMeta(chapter.number);
+        if (!meta) {
+            return chapterStructure.get(chapter.number) || null;
+        }
+        const sourceStructure = chapterStructure.get(meta.sourceChapter || chapter.number);
+        if (!sourceStructure) return null;
+        if (!meta.sourceSection) {
+            return sourceStructure;
+        }
+        const section = sourceStructure.sections.find((sec) => sec.numericalKey === meta.sourceSection);
+        if (!section) {
+            return { chapterTitle: sourceStructure.chapterTitle, sections: [] };
+        }
+        return {
+            chapterTitle: sourceStructure.chapterTitle,
+            sections: [section]
+        };
     }
 
     function computeItemStats(numericalKey) {
@@ -774,8 +922,13 @@ function initDashboard() {
             const itemNum = parts[2] || '0';
             const numericalKey = `${chapterNum} | ${sectionNum} | ${itemNum}`;
             const meta = itemMetadata.get(numericalKey);
-            const chapterInfo = CHAPTERS.find(ch => ch.number === chapterNum) || { number: chapterNum, title: '' };
-            const chapterTitle = chapterDisplayTitle(chapterInfo);
+            const displayChapterKey = resolveDisplayChapterKey(chapterNum, sectionNum);
+            const displayMeta = getDisplayMeta(displayChapterKey);
+            const chapterTitle = displayMeta
+                ? (chapterGrouping === 'section' && displayMeta.parentChapterTitle
+                    ? `${displayMeta.parentChapterTitle} → ${displayMeta.displayTitle}`
+                    : displayMeta.displayTitle)
+                : (meta ? meta.baseChapterTitle : chapterDisplayTitle({ number: chapterNum, title: '' }));
 
             entries.forEach((question, index) => {
                 const year = (question.id || '').split('-')[0] || '기타';
@@ -794,7 +947,7 @@ function initDashboard() {
 
                 const augmented = {
                     ...question,
-                    chapterNumber: chapterNum,
+                    chapterNumber: displayChapterKey,
                     chapterTitle,
                     sectionNumber: sectionNum,
                     sectionTitle: meta ? meta.sectionTitle : '',
@@ -809,13 +962,13 @@ function initDashboard() {
 
                 entries[index] = augmented;
 
-                pushToIndex(`${chapterNum}|${year}`, augmented);
-                pushToIndex(`${chapterNum}|all`, augmented);
+                pushToIndex(`${displayChapterKey}|${year}`, augmented);
+                pushToIndex(`${displayChapterKey}|all`, augmented);
 
-                if (!chapterStats.has(chapterNum)) {
-                    chapterStats.set(chapterNum, { perYear: {}, total: 0, sections: 0, items: 0 });
+                if (!chapterStats.has(displayChapterKey)) {
+                    chapterStats.set(displayChapterKey, { perYear: {}, total: 0, sections: 0, items: 0 });
                 }
-                const stats = chapterStats.get(chapterNum);
+                const stats = chapterStats.get(displayChapterKey);
                 stats.perYear[year] = (stats.perYear[year] || 0) + 1;
                 stats.total += 1;
             });
@@ -830,7 +983,7 @@ function initDashboard() {
                     stats.perYear[year] = 0;
                 }
             });
-            const structure = chapterStructure.get(chapter.number);
+            const structure = getStructureForDisplayChapter(chapter);
             if (structure) {
                 stats.sections = structure.sections.length;
                 stats.items = structure.sections.reduce((sum, section) => sum + section.items.length, 0);
@@ -898,7 +1051,15 @@ function initDashboard() {
         CONCEPT_BASE = subject.conceptBase;
         const rawMediaBase = subject.mediaBase || '';
         MEDIA_BASE = rawMediaBase ? (rawMediaBase.endsWith('/') ? rawMediaBase : `${rawMediaBase}/`) : '';
-        CHAPTERS = subject.chapters;
+        baseChapters = subject.chapters;
+        baseChapterIndex = new Map();
+        baseChapters.forEach((chapter) => {
+            baseChapterIndex.set(chapter.number, chapter);
+        });
+        CHAPTERS = [];
+        displayMetaByNumber = new Map();
+        sourceToDisplayKey = new Map();
+        chapterGrouping = subject.chapterGrouping || 'chapter';
 
         questionBank = getProcessedQuestionBank(subject.id);
         parsedCache = new Map();
@@ -925,6 +1086,7 @@ function initDashboard() {
         resetSearchUI();
 
         await preloadAllChapters();
+        buildDisplayChapterIndex();
         computeYearsAndIndex();
         buildSearchIndex();
         updateHeroMetrics(computeGlobalStats());
@@ -1081,7 +1243,7 @@ function initDashboard() {
 
         questions.forEach((q) => {
             const li = document.createElement('li');
-            li.classList.add('question-card');
+            li.classList.add('question-card', 'show-answer');
             const year = q.year || (q.id ? q.id.split('-')[0] : '');
             const number = q.id ? q.id.split('-')[1] : '';
             const itemTitle = q.itemLabel || q.item_key || '';
@@ -1094,13 +1256,9 @@ function initDashboard() {
                 </div>
                 ${mediaUrl ? `<figure class="question-data"><img src="${mediaUrl}" alt="문제 자료" class="data-image" loading="lazy"></figure>` : ''}
                 <div class="question-body">${q.question_text || ''}</div>
-                <button type="button" class="options-toggle" aria-pressed="false">
-                    <span class="options-text">정답 보기</span>
-                </button>
                 <ul class="question-options">${q.options_html || ''}</ul>
             `;
 
-            const toggle = li.querySelector('.options-toggle');
             const optionsList = li.querySelector('.question-options');
             const mediaImg = li.querySelector('.data-image');
 
@@ -1126,24 +1284,10 @@ function initDashboard() {
                     const option = marker.closest('li');
                     if (option) {
                         option.dataset.correct = 'true';
-                        if (!option.querySelector('.answer-badge')) {
-                            const badge = document.createElement('span');
-                            badge.className = 'answer-badge';
-                            badge.textContent = '정답';
-                            badge.setAttribute('aria-hidden', 'true');
-                            option.appendChild(badge);
-                        }
                     }
                     marker.remove();
                 });
             }
-
-            toggle.addEventListener('click', (event) => {
-                event.stopPropagation();
-                const show = li.classList.toggle('show-answer');
-                toggle.setAttribute('aria-pressed', show ? 'true' : 'false');
-                toggle.querySelector('.options-text').textContent = show ? '정답 숨기기' : '정답 보기';
-            });
 
             ul.appendChild(li);
         });
@@ -1154,6 +1298,10 @@ function initDashboard() {
     function buildChapterDetail(chapter, container) {
         const chapterNumber = chapter.number;
         const chapterTitle = chapterDisplayTitle(chapter);
+        const displayMeta = getDisplayMeta(chapterNumber);
+        const parentChapterTitle = (chapterGrouping === 'section' && displayMeta && displayMeta.parentChapterTitle)
+            ? displayMeta.parentChapterTitle
+            : chapterTitle;
         const chapterQuestions = chapterYearIndex.get(`${chapterNumber}|all`) || [];
 
         container.innerHTML = '';
@@ -1186,7 +1334,7 @@ function initDashboard() {
             return;
         }
 
-        const structure = chapterStructure.get(chapterNumber);
+        const structure = getStructureForDisplayChapter(chapter);
         const sectionWrap = document.createElement('div');
         sectionWrap.className = 'chapter-section-wrap';
 
@@ -1220,8 +1368,13 @@ function initDashboard() {
             const sectionQuestions = chapterQuestions.filter(q => q.sectionNumber === section.numericalKey);
             const sectionCount = filterQuestionsByYear(sectionQuestions, state.activeYear).length;
             const sectionCountClass = sectionCount > 0 ? 'section-count' : 'section-count is-zero';
+            const sectionLabel = section.rawTitle || `제${Number(section.numericalKey || section.sectionIndex + 1)}절`;
+            const sectionTitleText = chapterGrouping === 'section'
+                ? `${parentChapterTitle} ${sectionLabel}`
+                : sectionLabel;
+
             summary.innerHTML = `
-                <span class="section-title">${section.rawTitle}</span>
+                <span class="section-title">${sectionTitleText}</span>
                 <span class="${sectionCountClass}">${formatNumber(sectionCount)}문제</span>
             `;
             details.appendChild(summary);
@@ -1315,9 +1468,6 @@ function initDashboard() {
         `;
         container.appendChild(header);
 
-        const detailGrid = document.createElement('div');
-        detailGrid.className = 'item-detail-grid';
-
         const questionWrap = document.createElement('div');
         questionWrap.className = 'item-detail-questions';
         const questions = filterQuestionsByYear(questionBank[itemEntry.numericalKey] || [], state.activeYear).map((q) => ({
@@ -1325,14 +1475,7 @@ function initDashboard() {
             itemLabel: q.itemLabel || itemLabel
         }));
         renderQuestions(questions, questionWrap);
-        detailGrid.appendChild(questionWrap);
-
-        const conceptWrap = document.createElement('div');
-        conceptWrap.className = 'item-detail-concept';
-        detailGrid.appendChild(conceptWrap);
-        loadConceptContent(itemEntry.numericalKey, conceptWrap);
-
-        container.appendChild(detailGrid);
+        container.appendChild(questionWrap);
     }
 
     function scrollToChapterDetail(chapterNumber) {
@@ -1461,9 +1604,14 @@ function initDashboard() {
         searchIndex.length = 0;
 
         CHAPTERS.forEach((chapter) => {
-            const structure = chapterStructure.get(chapter.number);
+            const structure = getStructureForDisplayChapter(chapter);
             if (!structure) return;
-            const chapterTitle = structure.chapterTitle;
+            const displayMeta = getDisplayMeta(chapter.number);
+            const chapterTitle = displayMeta
+                ? (chapterGrouping === 'section' && displayMeta.parentChapterTitle
+                    ? `${displayMeta.parentChapterTitle} → ${displayMeta.sectionTitle || displayMeta.displayTitle}`
+                    : displayMeta.displayTitle)
+                : structure.chapterTitle;
 
             structure.sections.forEach((section) => {
                 const sectionQuestions = (chapterYearIndex.get(`${chapter.number}|all`) || [])
