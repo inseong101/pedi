@@ -432,7 +432,6 @@ function initDashboard() {
                 tester.onload = handleSuccess;
                 tester.onerror = handleError;
                 tester.decoding = 'async';
-                tester.loading = 'lazy';
                 tester.src = uniqueSources[attempt];
             };
 
