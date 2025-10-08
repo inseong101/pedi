@@ -5,14 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>소아과학 목차</title>
   <!-- 외부 CSS 불러오기 -->
-  <link rel="stylesheet" href="style.css?v=20241007" />
+  <link rel="stylesheet" href="style.css?v=20241008" />
 </head>
 <body>
   <main class="wrap">
     <header class="hero">
-      <p class="hero-eyebrow">Pedi board review 2021-2025</p>
-      <h1 id="global-toc-title">소아과학 목차</h1>
-      <p class="hero-desc">
+      <p class="hero-eyebrow" id="hero-eyebrow">Pedi board review 2021-2025</p>
+      <div class="hero-heading-row">
+        <h1 id="global-toc-title">소아과학 목차</h1>
+        <nav class="subject-switcher" id="subject-switcher" aria-label="과목 선택">
+          <button type="button" class="is-active" data-subject="pedi" aria-pressed="true">소아과학</button>
+          <button type="button" data-subject="hanbang" aria-pressed="false">한방생리학</button>
+        </nav>
+      </div>
+      <p class="hero-desc" id="hero-desc">
         기출 5개년 데이터를 기반으로 장·절·항목별 개념과 문제 출제 현황을 한눈에 정리했습니다.
         검색을 통해 필요한 개념을 빠르게 찾고, 바로 아래에서 연도별 출제 빈도와 문제를 확인하세요.
       </p>
@@ -64,6 +70,6 @@
   </main>
 
   <!-- 외부 JS 불러오기 -->
-  <script src="script.js?v=20241007"></script>
+  <script src="script.js?v=20241008"></script>
 </body>
 </html>
