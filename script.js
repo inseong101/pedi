@@ -276,6 +276,8 @@ function initDashboard() {
             candidateSources.push(placeholderUrl);
         }
 
+        const hasExplicitMedia = !!(raw && !placeholderName);
+
         if (candidateSources.length) {
             const fallbacks = candidateSources.slice(1);
             if (placeholderUrl && !candidateSources.includes(placeholderUrl)) {
@@ -284,7 +286,8 @@ function initDashboard() {
             primaryEntry = {
                 initial: candidateSources[0],
                 fallbacks,
-                expectedNames: guidanceNames
+                expectedNames: guidanceNames,
+                optional: !hasExplicitMedia
             };
         }
 
