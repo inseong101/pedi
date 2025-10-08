@@ -1255,8 +1255,14 @@ function initDashboard() {
                     <span class="q-item-key">${itemTitle}</span>
                 </div>
                 ${mediaUrl ? `<figure class="question-data"><img src="${mediaUrl}" alt="문제 자료" class="data-image" loading="lazy"></figure>` : ''}
-                <div class="question-body">${q.question_text || ''}</div>
-                <ul class="question-options">${q.options_html || ''}</ul>
+                <div class="question-content">
+                    <div class="question-stem-block">
+                        <div class="question-body">${q.question_text || ''}</div>
+                    </div>
+                    <div class="question-options-block">
+                        <ul class="question-options">${q.options_html || ''}</ul>
+                    </div>
+                </div>
             `;
 
             const optionsList = li.querySelector('.question-options');
