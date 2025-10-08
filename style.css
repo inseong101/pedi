@@ -1056,6 +1056,13 @@ h1, h2, h3 {
     margin: 0;
 }
 
+.question-media {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 8px 0;
+}
+
 .question-data img {
     max-width: 100%;
     height: auto;
