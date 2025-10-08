@@ -212,18 +212,80 @@ function initDashboard() {
 
     function resolveQuestionMedia(question) {
         if (!question || !question.data_1) return null;
+
         const raw = String(question.data_1).trim();
         if (!raw) return null;
-        if (/^(https?:|data:|\/)/i.test(raw) || raw.startsWith('./')) {
-            return raw;
+
+        const DEFAULT_PLACEHOLDER_NAMES = new Set(['그림.svg']);
+        const MEDIA_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'];
+
+        const buildMediaUrl = (value) => {
+            if (!value) return null;
+            const trimmed = String(value).trim();
+            if (!trimmed) return null;
+            if (/^(https?:|data:|\/)/i.test(trimmed) || trimmed.startsWith('./')) {
+                return trimmed;
+            }
+            const hasExtension = /\.[a-zA-Z0-9]{2,4}$/.test(trimmed);
+            const fileName = hasExtension ? trimmed : `${trimmed}.png`;
+            const encoded = fileName
+                .split('/')
+                .map((segment) => encodeURIComponent(segment))
+                .join('/');
+            return MEDIA_BASE ? `${MEDIA_BASE}${encoded}` : encoded;
+        };
+
+        const placeholderName = DEFAULT_PLACEHOLDER_NAMES.has(raw) ? raw : null;
+        const placeholderUrl = placeholderName ? buildMediaUrl(placeholderName) : null;
+
+        const candidates = [];
+        const addCandidate = (url) => {
+            if (!url) return;
+            if (!candidates.includes(url)) {
+                candidates.push(url);
+            }
+        };
+
+        const expectedNames = [];
+
+        if (raw && !placeholderName) {
+            addCandidate(buildMediaUrl(raw));
         }
-        const hasExtension = /\.[a-zA-Z0-9]{2,4}$/.test(raw);
-        const fileName = hasExtension ? raw : `${raw}.png`;
-        const encoded = fileName
-            .split('/')
-            .map((segment) => encodeURIComponent(segment))
-            .join('/');
-        return MEDIA_BASE ? `${MEDIA_BASE}${encoded}` : encoded;
+
+        const idBase = question.id ? String(question.id).trim() : '';
+        if (idBase) {
+            const safeId = idBase.replace(/\s+/g, '');
+            MEDIA_EXTENSIONS.forEach((ext) => {
+                const fileName = `${safeId}.${ext}`;
+                expectedNames.push(fileName);
+                addCandidate(buildMediaUrl(fileName));
+            });
+        }
+
+        if (!candidates.length && placeholderUrl) {
+            candidates.push(placeholderUrl);
+        }
+
+        if (!candidates.length) return null;
+
+        const fallbacks = [];
+        candidates.forEach((url, index) => {
+            if (index > 0) {
+                fallbacks.push(url);
+            }
+        });
+
+        if (placeholderUrl && !candidates.includes(placeholderUrl)) {
+            fallbacks.push(placeholderUrl);
+        }
+
+        const uniqueExpected = Array.from(new Set(expectedNames));
+
+        return {
+            initial: candidates[0],
+            fallbacks,
+            expectedNames: uniqueExpected
+        };
     }
 
     function formatNumber(num) {
@@ -1247,14 +1309,23 @@ function initDashboard() {
             const year = q.year || (q.id ? q.id.split('-')[0] : '');
             const number = q.id ? q.id.split('-')[1] : '';
             const itemTitle = q.itemLabel || q.item_key || '';
-            const mediaUrl = resolveQuestionMedia(q);
+            const mediaInfo = resolveQuestionMedia(q);
+            const mediaFallbackAttr = mediaInfo && mediaInfo.fallbacks && mediaInfo.fallbacks.length
+                ? ` data-fallback-sources="${escapeHtml(mediaInfo.fallbacks.join('|'))}"`
+                : '';
+            const expectedMediaAttr = mediaInfo && mediaInfo.expectedNames && mediaInfo.expectedNames.length
+                ? ` data-expected-media="${escapeHtml(mediaInfo.expectedNames.join('|'))}"`
+                : '';
+            const mediaMarkup = mediaInfo
+                ? `<figure class="question-data"><img src="${escapeHtml(mediaInfo.initial)}" alt="문제 자료" class="data-image" loading="lazy"${mediaFallbackAttr}${expectedMediaAttr}></figure>`
+                : '';
 
             li.innerHTML = `
                 <div class="question-header">
                     <span class="q-year">${year ? `${year}년` : ''} ${number ? `${number}번` : ''}</span>
                     <span class="q-item-key">${itemTitle}</span>
                 </div>
-                ${mediaUrl ? `<figure class="question-data"><img src="${mediaUrl}" alt="문제 자료" class="data-image" loading="lazy"></figure>` : ''}
+                ${mediaMarkup}
                 <div class="question-content">
                     <div class="question-stem-block">
                         <div class="question-body">${q.question_text || ''}</div>
@@ -1269,11 +1340,35 @@ function initDashboard() {
             const mediaImg = li.querySelector('.data-image');
 
             if (mediaImg) {
-                mediaImg.addEventListener('error', () => {
+                const fallbackSources = mediaImg.dataset.fallbackSources
+                    ? mediaImg.dataset.fallbackSources.split('|').map((src) => src.trim()).filter(Boolean)
+                    : [];
+                const expectedMediaNames = mediaImg.dataset.expectedMedia
+                    ? mediaImg.dataset.expectedMedia.split('|').map((name) => name.trim()).filter(Boolean)
+                    : [];
+
+                const handleMediaError = () => {
                     if (!mediaImg.isConnected) return;
+
+                    if (fallbackSources.length) {
+                        const nextSrc = fallbackSources.shift();
+                        if (nextSrc) {
+                            mediaImg.src = nextSrc;
+                            return;
+                        }
+                    }
+
                     const fallback = document.createElement('div');
                     fallback.className = 'media-fallback';
-                    fallback.innerHTML = `📁 <span>이미지 파일을 <code>${MEDIA_BASE}</code> 경로에 추가해주세요.</span>`;
+
+                    let hint = '';
+                    if (expectedMediaNames.length) {
+                        const previewNames = expectedMediaNames.slice(0, 3).map((name) => `<code>${escapeHtml(name)}</code>`);
+                        const ellipsis = expectedMediaNames.length > 3 ? ', …' : '';
+                        hint = `<br><small>예: ${previewNames.join(', ')}${ellipsis}</small>`;
+                    }
+
+                    fallback.innerHTML = `📁 <span>이미지 파일을 <code>${escapeHtml(MEDIA_BASE || './')}</code> 경로에 추가해주세요.${hint}</span>`;
                     const figure = mediaImg.closest('figure.question-data');
                     if (figure) {
                         figure.innerHTML = '';
@@ -1281,7 +1376,11 @@ function initDashboard() {
                     } else {
                         mediaImg.replaceWith(fallback);
                     }
-                }, { once: true });
+
+                    mediaImg.removeEventListener('error', handleMediaError);
+                };
+
+                mediaImg.addEventListener('error', handleMediaError);
             }
 
             if (optionsList) {
